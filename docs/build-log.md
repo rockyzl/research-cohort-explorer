@@ -20,6 +20,12 @@ attempted, what went wrong, how it was caught. `docs/ai-assisted-engineering.md`
   against the catalog and stopped with `values outside catalog allowed_values: {'Stage III'}`.
   Fixed in the catalog; the check stays because the NL-to-SQL prompt shows these enums to the model,
   so a missing value would silently steer generated filters.
+- **Function allow-list rejected `AND`.** The first cohort-builder query was refused with
+  `function 'and' is not allowed`: sqlglot models `AND`/`OR`/comparisons as `Func` subclasses, so
+  walking `exp.Func` treated operators as functions. Caught by the first end-to-end smoke run of
+  the cohort builder. Fix: skip `Binary`/`Connector`/`Unary`/`Predicate` nodes; the SQLite
+  authorizer remains the backstop for real function calls. The same smoke run showed `instr()`
+  appears as `str_position` in sqlglot, which was added to the allow-list.
 - **Gold verifier bug (not a data disagreement).** The first run of `gold/verify_pandas.py` crashed:
   `p.hist` resolved to the pandas `DataFrame.hist` plotting method rather than the `hist` column.
   Fixed by indexing `p["hist"]`. After the fix all 40 answerable reference answers agreed with the
@@ -54,3 +60,10 @@ attempted, what went wrong, how it was caught. `docs/ai-assisted-engineering.md`
   "excluding missing") were written by the same author as the questions. Added, and committed
   before running: `gold/stress.yaml` (colloquial phrasing), a bare-schema prompt ablation, and a
   permissive-generator ablation that exercises the guard.
+- **Provenance stamp polluted by result files.** The harness stamped runs with
+  `git describe --dirty`, which marked runs dirty merely because an earlier run in the same
+  `make` chain had rewritten `results/*.json`. The dirty check now ignores `results/` and `data/`.
+- **Stress / ablation findings (LLM errors no guard can catch).** S11 "node-positive" -> model
+  invented "node-positive = stage II-III" under all three prompts; TR4 -> under the bare and
+  permissive prompts the model asserted site code `BS` *is* Boston Children's Hospital. Both are
+  valid, aggregate, suppressed SQL. Details in `docs/evaluation.md`.
