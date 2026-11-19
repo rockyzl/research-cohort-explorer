@@ -29,6 +29,24 @@ def subset(items, pred):
             "refuse_correct": sum(r["correct"] for r in ref), "refuse_n": len(ref)}
 
 
+BLANKED = ("<11", "suppressed")
+
+
+def shown_vs_scored(items):
+    """Items where the result shown to the user (qualified/rewritten SQL, after the output policy)
+    differs from the raw result the harness scored, on any non-suppressed value."""
+    bad = []
+    for r in items:
+        pred, shown = r.get("predicted_result"), r.get("shown_to_user")
+        if pred is None or shown is None:
+            continue
+        same = len(pred) == len(shown) and all(
+            len(a) == len(b) and all(y in BLANKED or x == y for x, y in zip(a, b)) for a, b in zip(pred, shown))
+        if not same:
+            bad.append(r["id"])
+    return bad
+
+
 def main():
     out = {"runs": {}}
     for key, fname in RUNS.items():
@@ -41,6 +59,8 @@ def main():
                "llm_calls": s["llm_calls"], "llm_calls_from_cache": s["llm_calls_from_cache"], "tokens": s["tokens"],
                "outcomes": s["outcomes"], "silent_wrong_answers": s["silent_wrong_answers"],
                "first_attempt_guard_errors": s.get("first_attempt_guard_errors", {}),
+               "shown_vs_scored_mismatches": shown_vs_scored(items),
+               "n_items_shown_and_scored": sum(1 for r in items if r.get("shown_to_user") is not None),
                "by_split": {sp: subset(items, lambda r, sp=sp: r["split"] == sp)
                             for sp in sorted({r["split"] for r in items})}}
         out["runs"][key] = rec
@@ -81,6 +101,9 @@ def main():
     print()
     print(json.dumps(out["guard_ablation"], indent=2))
     print("gold verification:", out["gold_verification"])
+    for key, rec in out["runs"].items():
+        print(f"{key}: shown-vs-scored mismatches {rec['shown_vs_scored_mismatches']} "
+              f"over {rec['n_items_shown_and_scored']} items")
 
 
 if __name__ == "__main__":

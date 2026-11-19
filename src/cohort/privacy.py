@@ -7,9 +7,16 @@ Rules (see README "Guardrails"):
         Rows whose cell size is 1-10 have every statistic (count, avg, min, max...) blanked,
         not only the counts, because an average over 3 patients is also disclosive.
      b. Any output column produced by COUNT/SUM (in any sub-query) has values 1-10 blanked.
-     c. Secondary suppression: if exactly one cell in a count column was blanked, the next
-        smallest non-zero cell is blanked too, so the hidden value cannot be recovered by
-        subtraction within that column. Cross-query differencing is NOT prevented (limitation).
+     c. Within-row complementary suppression: if two count columns in the same row differ by
+        1-10 (e.g. patients=139, with_survival=138 reveals 1 patient without survival data), the
+        smaller one is blanked; repeated until no such pair remains. Conservative: it does not
+        know which columns are subsets of which, so it may over-suppress.
+     d. Within-column secondary suppression: if exactly one cell in a count column was blanked,
+        the next smallest non-zero cell is blanked too, so the hidden value cannot be recovered by
+        subtraction within that column.
+     Cross-query differencing is NOT prevented (limitation).
+     Markers: "<11" = the cell itself is small; "suppressed" = complementary/secondary blanking
+     of a value that is NOT itself small.
   2. Free-text columns never appear in exports; row-level results cannot be exported.
   3. Rows are capped (sqlguard.MAX_ROWS).
 """
@@ -25,7 +32,9 @@ from cohort.sqlguard import is_aggregate_select, outer_selects
 
 THRESHOLD = 11
 CELL_COL = "__cell_n"
-SUPPRESSED = "<11"  # marker string; genuine NULLs stay None
+SUPPRESSED = "<11"          # primary: the value/cell is 1-10; genuine NULLs stay None
+SECONDARY = "suppressed"    # complementary/secondary: value hidden to protect another cell
+BLANKED = (SUPPRESSED, SECONDARY)
 
 
 @dataclass
@@ -104,23 +113,37 @@ def apply(columns: list[str], rows: list[tuple], policy: Policy) -> tuple[list[s
             n = r[cell_idx]
             if n is not None and 0 < n < THRESHOLD:
                 for i in stat_idx:
-                    if r[i] != SUPPRESSED:
+                    if r[i] not in BLANKED:
                         r[i] = SUPPRESSED
                         suppressed += 1
     count_idx = [i for i, c in enumerate(lower) if c in policy.count_columns and i != cell_idx]
-    for i in count_idx:
+    num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)  # noqa: E731
+    for i in count_idx:  # (b) primary
         for r in rows:
-            v = r[i]
-            if isinstance(v, (int, float)) and 0 < v < THRESHOLD:
+            if num(r[i]) and 0 < r[i] < THRESHOLD:
                 r[i] = SUPPRESSED
                 suppressed += 1
-        # secondary suppression within the column
-        blanked = [r for r in rows if r[i] == SUPPRESSED]
+    for r in rows:  # (c) within-row complements
+        changed = True
+        while changed:
+            changed = False
+            live = [i for i in count_idx if num(r[i])]
+            for a in live:
+                for b in live:
+                    if a != b and 0 < r[a] - r[b] < THRESHOLD:
+                        r[b] = SECONDARY
+                        suppressed += 1
+                        changed = True
+                        break
+                if changed:
+                    break
+    for i in count_idx:  # (d) within-column secondary
+        blanked = [r for r in rows if r[i] in BLANKED]
         if len(blanked) == 1 and len(rows) > 1:
-            others = [r for r in rows if isinstance(r[i], (int, float)) and r[i] > 0]
+            others = [r for r in rows if num(r[i]) and r[i] > 0]
             if others:
                 victim = min(others, key=lambda r: r[i])
-                victim[i] = SUPPRESSED
+                victim[i] = SECONDARY
                 suppressed += 1
     if cell_idx is not None:
         columns = [c for j, c in enumerate(columns) if j != cell_idx]

@@ -1,8 +1,10 @@
 """Output policy: small-cell suppression (n<11), secondary suppression, export rules."""
 import pytest
+import yaml
 
 from cohort import privacy
-from cohort.service import build_cohort, run_sql, run_sql_raw
+from cohort.catalog import ROOT
+from cohort.service import build_cohort, cohort_sql, run_sql, run_sql_raw
 
 pytestmark = pytest.mark.needs_db
 
@@ -18,7 +20,7 @@ def test_secondary_suppression_blanks_next_smallest():
     raw = dict(run_sql_raw("SELECT race, COUNT(*) FROM patients WHERE race IS NOT NULL GROUP BY race").rows)
     r = run_sql("SELECT race, COUNT(*) FROM patients WHERE race IS NOT NULL GROUP BY race")
     shown = {row[0]: row[1] for row in r["rows"]}
-    assert raw["ASIAN"] >= 11 and shown["ASIAN"] == "<11"       # complementary cell
+    assert raw["ASIAN"] >= 11 and shown["ASIAN"] == privacy.SECONDARY   # complementary cell, not itself small
     assert r["suppressed_cells"] == 2
 
 
@@ -82,3 +84,41 @@ def test_cohort_builder_counts_match_raw():
     raw = run_sql_raw("SELECT COUNT(*) FROM clinical c JOIN data_availability a ON a.patient_id = c.patient_id "
                       "WHERE c.er_status = 'Positive' AND a.has_rna_tumor = 1").rows[0][0]
     assert out["summary"]["rows"][0][0] == raw
+
+
+def test_within_row_complement_cohort_builder():
+    """Basal cohort: patients=139 and with_survival=138 would reveal 1 patient without survival data."""
+    out = build_cohort({"pam50_subtype": ["Basal"]})
+    s = out["summary"]
+    row = dict(zip(s["columns"], s["rows"][0]))
+    raw = run_sql_raw(cohort_sql({"pam50_subtype": ["Basal"]})).rows[0]
+    raw = dict(zip(s["columns"], raw))
+    shown_numbers = [v for v in row.values() if isinstance(v, int)]
+    for a in shown_numbers:
+        for b in shown_numbers:
+            assert not (0 < a - b < privacy.THRESHOLD), (a, b)
+    assert raw["patients"] - raw["with_survival"] < privacy.THRESHOLD
+    assert row["with_survival"] == privacy.SECONDARY
+
+
+def test_within_row_complement_generic_query():
+    r = run_sql("SELECT COUNT(*), SUM(has_rna_tumor) FROM data_availability")
+    a, b = r["rows"][0]
+    assert b == privacy.SECONDARY  # 1092 vs 1090 differs by 2
+
+
+GOLD_ITEMS = [it for f in ("gold.yaml", "stress.yaml")
+              for it in yaml.safe_load((ROOT / "gold" / f).read_text())["items"] if it.get("sql")]
+
+
+@pytest.mark.parametrize("item", GOLD_ITEMS, ids=lambda it: it["id"])
+def test_shown_result_equals_scored_result_modulo_suppression(item):
+    """Users see the result of the qualified/rewritten SQL; the harness scores the original SQL.
+    They must agree on every value that is not suppressed."""
+    raw = run_sql_raw(item["sql"]).rows
+    shown = run_sql(item["sql"])
+    assert shown["ok"], shown.get("error")
+    assert len(raw) == len(shown["rows"])
+    for r_raw, r_shown in zip(raw, shown["rows"]):
+        for a, b in zip(r_raw, r_shown):
+            assert b in privacy.BLANKED or a == b, (item["id"], r_raw, r_shown)

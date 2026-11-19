@@ -92,7 +92,7 @@ document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
 function resultTable(res) {
   if (!res.ok) return `<p class="err">Rejected at <b>${esc(res.error_stage)}</b>: ${esc(res.error)}</p><pre>${esc(res.sql)}</pre>`;
   const head = res.columns.map(c => `<th>${esc(c)}</th>`).join('');
-  const body = res.rows.map(r => '<tr>' + r.map(v => v === '<11' ? `<td class="sup">&lt;11</td>` : `<td>${v === null ? '<i>NULL</i>' : esc(typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : v)}</td>`).join('') + '</tr>').join('');
+  const body = res.rows.map(r => '<tr>' + r.map(v => (v === '<11' || v === 'suppressed') ? `<td class="sup">${esc(v)}</td>` : `<td>${v === null ? '<i>NULL</i>' : esc(typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : v)}</td>`).join('') + '</tr>').join('');
   return `<table><tr>${head}</tr>${body}</table>
     <p>${res.row_count} row(s)${res.truncated ? ` (truncated at ${res.max_rows})` : ''}; suppressed cells: ${res.suppressed_cells}; export: ${res.exportable ? 'allowed' : 'blocked'} (${esc(res.export_note)})</p>
     <details><summary>Executed SQL and checks</summary><pre>${esc(res.executed_sql)}</pre><ul class="checks">${res.checks.map(c => `<li>${esc(c)}</li>`).join('')}</ul></details>`;
