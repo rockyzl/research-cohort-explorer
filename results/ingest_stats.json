@@ -1,0 +1,23 @@
+{
+  "built_at": "2026-11-19T13:22:28.940204+00:00",
+  "cdr_brca_rows": 1097,
+  "cdr_redacted": 5,
+  "universe_patients": 1092,
+  "xena_matrix_patients": 1101,
+  "xena_matrix_patients_not_in_universe": 9,
+  "receptor_conflicts_set_null": {},
+  "rna_samples_total": 1218,
+  "rna_samples_not_in_universe": 9,
+  "reports_total_all_cancers": 9523,
+  "gdc_slide_files": 3112,
+  "gdc_slide_files_not_in_universe": 21,
+  "row_counts": {
+    "patients": 1092,
+    "clinical": 1092,
+    "rna_samples": 1209,
+    "gene_expression": 12090,
+    "pathology_reports": 1029,
+    "slide_images": 3091,
+    "data_availability": 1092
+  }
+}

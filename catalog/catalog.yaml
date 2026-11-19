@@ -1,0 +1,147 @@
+# Machine-readable data dictionary + metadata catalog.
+# This file is the single source of truth: ingest creates tables from it and fails if the loaded
+# data do not match; the SQL guard derives its table/column allow-list from it; the NL-to-SQL
+# prompt is rendered from it; the UI browses it.
+#
+# access_tier:
+#   public      - TCGA open-access, de-identified; any role may read.
+#   restricted  - ILLUSTRATIVE ONLY. Pathology-report free text is public TCGA data, but it is
+#                 treated here the way a hospital would treat note text (controlled access), to
+#                 demonstrate an authorized-use workflow. Only role "approved" may read it, and
+#                 free-text columns never appear in aggregate exports.
+# omop_like: a naming crosswalk to OMOP CDM v5.4 tables/fields. Naming only; no concept_ids are
+#   asserted. See docs/standards-mapping.md.
+
+dataset:
+  name: TCGA-BRCA research cohort explorer
+  description: >-
+    Public, de-identified TCGA breast invasive carcinoma (BRCA) patients with clinical endpoints,
+    receptor status, RNA-seq availability and a marker-gene panel, pathology-report text, and
+    slide-image file metadata. Patient universe = TCGA-CDR BRCA rows minus CDR "Redacted".
+  join_key: patient_id (12-character TCGA patient barcode, e.g. TCGA-A1-A0SB)
+  not_phi: >-
+    TCGA is open-access de-identified research data. Ages above 89 are top-coded to 90 by the source.
+    Nothing here is from Boston Children's Hospital or any clinical system.
+
+tables:
+  patients:
+    description: One row per patient in the universe. Demographics at diagnosis.
+    grain: patient
+    primary_key: [patient_id]
+    access_tier: public
+    source: cdr
+    omop_like: person
+    columns:
+      patient_id: {type: TEXT, description: "12-character TCGA patient barcode (TCGA-TSS-PART).", source: cdr.bcr_patient_barcode, omop_like: person.person_source_value}
+      gender: {type: TEXT, description: "Recorded gender.", allowed_values: [FEMALE, MALE], source: cdr.gender, omop_like: person.gender_source_value}
+      race: {type: TEXT, description: "Recorded race; '[Not Available]'/'[Not Evaluated]' loaded as NULL.", allowed_values: [WHITE, BLACK OR AFRICAN AMERICAN, ASIAN, AMERICAN INDIAN OR ALASKA NATIVE], source: cdr.race, omop_like: person.race_source_value}
+      age_at_diagnosis: {type: INTEGER, unit: years, description: "Age at initial pathologic diagnosis; top-coded at 90 by TCGA.", source: cdr.age_at_initial_pathologic_diagnosis, omop_like: "derived from person.year_of_birth and condition_start_date"}
+      menopause_status: {type: TEXT, description: "Menopause status at diagnosis, normalized from long CDR labels.", allowed_values: [Pre, Peri, Post, Indeterminate], source: cdr.menopause_status, omop_like: observation.value_as_string}
+      tissue_source_site: {type: TEXT, description: "2-character TCGA tissue source site code (barcode characters 6-7); identifies the contributing institution.", source: derived from patient_id, omop_like: care_site.care_site_source_value}
+
+  clinical:
+    description: One row per patient. Tumor stage, histology, receptor status, PAM50 subtype and survival endpoints.
+    grain: patient
+    primary_key: [patient_id]
+    access_tier: public
+    source: cdr + xena_clinical
+    omop_like: condition_occurrence / measurement / observation_period
+    columns:
+      patient_id: {type: TEXT, description: "Patient barcode; foreign key to patients.", source: cdr.bcr_patient_barcode, omop_like: person.person_source_value}
+      ajcc_stage: {type: TEXT, description: "AJCC pathologic tumor stage as recorded (e.g. 'Stage IIA'); NULL if '[Not Available]'.", allowed_values: [Stage I, Stage IA, Stage IB, Stage II, Stage IIA, Stage IIB, Stage III, Stage IIIA, Stage IIIB, Stage IIIC, Stage IV, Stage X, "[Discrepancy]"], source: cdr.ajcc_pathologic_tumor_stage, omop_like: measurement.value_source_value}
+      stage_group: {type: TEXT, description: "Collapsed AJCC stage: I, II, III or IV. NULL for Stage X, [Discrepancy] or missing.", allowed_values: [I, II, III, IV], source: derived from ajcc_stage, omop_like: measurement.value_as_concept (stage group)}
+      histological_type: {type: TEXT, description: "Histological type as recorded, e.g. 'Infiltrating Ductal Carcinoma'.", allowed_values: [Infiltrating Ductal Carcinoma, Infiltrating Lobular Carcinoma, Mixed Histology (please specify), Mucinous Carcinoma, Metaplastic Carcinoma, Medullary Carcinoma, Infiltrating Carcinoma NOS, "Other, specify"], source: cdr.histological_type, omop_like: condition_occurrence.condition_source_value}
+      er_status: {type: TEXT, description: "Estrogen receptor status of the primary tumor (IHC).", allowed_values: [Positive, Negative, Indeterminate], source: xena_clinical.breast_carcinoma_estrogen_receptor_status, omop_like: measurement (ER status)}
+      pr_status: {type: TEXT, description: "Progesterone receptor status of the primary tumor (IHC).", allowed_values: [Positive, Negative, Indeterminate], source: xena_clinical.breast_carcinoma_progesterone_receptor_status, omop_like: measurement (PR status)}
+      her2_ihc_status: {type: TEXT, description: "HER2 immunohistochemistry status only.", allowed_values: [Positive, Negative, Equivocal, Indeterminate], source: xena_clinical.lab_proc_her2_neu_immunohistochemistry_receptor_status, omop_like: measurement (HER2 IHC)}
+      her2_ish_status: {type: TEXT, description: "HER2 in situ hybridization (FISH/CISH) outcome.", allowed_values: [Positive, Negative, Equivocal, Indeterminate], source: xena_clinical.lab_procedure_her2_neu_in_situ_hybrid_outcome_type, omop_like: measurement (HER2 ISH)}
+      her2_status: {type: TEXT, description: "Combined HER2 call: Positive if IHC or ISH Positive; else Negative if IHC or ISH Negative; else Equivocal; else Indeterminate; NULL if neither test recorded. Use this column for 'HER2-positive/negative' questions.", allowed_values: [Positive, Negative, Equivocal, Indeterminate], source: derived from her2_ihc_status and her2_ish_status, omop_like: measurement (HER2 status)}
+      triple_negative: {type: INTEGER, description: "1 if er_status, pr_status and her2_status are all Negative; 0 if any of them is Positive; NULL otherwise.", allowed_values: [0, 1], source: derived, omop_like: observation}
+      pam50_subtype: {type: TEXT, description: "PAM50 intrinsic subtype called from RNA-seq of the primary tumor sample.", allowed_values: [LumA, LumB, Basal, Her2, Normal], source: xena_clinical.PAM50Call_RNAseq, omop_like: measurement.value_source_value}
+      vital_status: {type: TEXT, description: "Vital status at last follow-up.", allowed_values: [Alive, Dead], source: cdr.vital_status, omop_like: death}
+      os_event: {type: INTEGER, description: "Overall survival event indicator (1 = died).", allowed_values: [0, 1], source: cdr.OS, omop_like: death}
+      os_days: {type: INTEGER, unit: days, description: "Overall survival time from diagnosis.", source: cdr.OS.time, omop_like: observation_period}
+      pfi_event: {type: INTEGER, description: "Progression-free interval event indicator (1 = progression/new tumor/death with tumor), TCGA-CDR definition.", allowed_values: [0, 1], source: cdr.PFI, omop_like: episode_event (oncology extension)}
+      pfi_days: {type: INTEGER, unit: days, description: "Progression-free interval time from diagnosis.", source: cdr.PFI.time, omop_like: episode_event (oncology extension)}
+
+  rna_samples:
+    description: One row per RNA-seq sample (UCSC Xena TCGA.BRCA.sampleMap/HiSeqV2) for patients in the universe.
+    grain: sample
+    primary_key: [sample_id]
+    access_tier: public
+    source: rna
+    omop_like: specimen
+    columns:
+      sample_id: {type: TEXT, description: "15-character TCGA sample barcode, e.g. TCGA-A1-A0SB-01.", source: rna header, omop_like: specimen.specimen_source_id}
+      patient_id: {type: TEXT, description: "Patient barcode; foreign key to patients.", source: derived from sample_id, omop_like: specimen.person_id}
+      sample_type_code: {type: TEXT, description: "TCGA sample type code (barcode characters 14-15).", allowed_values: ["01", "06", "11"], source: derived from sample_id, omop_like: specimen.specimen_source_value}
+      sample_type: {type: TEXT, description: "Sample type label.", allowed_values: [Primary Tumor, Metastatic, Solid Tissue Normal], source: TCGA code table, omop_like: specimen.specimen_concept (label)}
+
+  gene_expression:
+    description: Long-format expression summary for a 10-gene breast-cancer marker panel (not the full transcriptome), one row per sample x gene.
+    grain: sample x gene
+    primary_key: [sample_id, gene_symbol]
+    access_tier: public
+    source: rna
+    omop_like: measurement
+    columns:
+      sample_id: {type: TEXT, description: "Sample barcode; foreign key to rna_samples.", source: rna header, omop_like: measurement.specimen (via specimen)}
+      patient_id: {type: TEXT, description: "Patient barcode; foreign key to patients.", source: derived, omop_like: measurement.person_id}
+      gene_symbol: {type: TEXT, description: "HUGO gene symbol.", allowed_values: [ESR1, PGR, ERBB2, MKI67, GATA3, FOXA1, KRT5, EGFR, AURKA, CCNB1], source: rna row name, omop_like: measurement.measurement_source_value}
+      log2_expr: {type: REAL, unit: "log2(RSEM normalized count + 1)", description: "Gene-level expression value as distributed by Xena (IlluminaHiSeq RNASeqV2).", source: rna value, omop_like: measurement.value_as_number}
+
+  pathology_reports:
+    description: One OCR-derived pathology report per patient (TCGA-Reports, Kefeli & Tatonetti 2024). Report text is RESTRICTED (illustrative).
+    grain: report
+    primary_key: [report_id]
+    access_tier: restricted
+    source: reports
+    omop_like: note
+    columns:
+      report_id: {type: TEXT, description: "Report identifier (UUID suffix of the TCGA-Reports file name).", source: reports.patient_filename, omop_like: note.note_source_value, access_tier: public}
+      patient_id: {type: TEXT, description: "Patient barcode; foreign key to patients.", source: reports.patient_filename, omop_like: note.person_id, access_tier: public}
+      n_chars: {type: INTEGER, unit: characters, description: "Length of the report text in characters.", source: derived, omop_like: "n/a", access_tier: public}
+      report_text: {type: TEXT, description: "Full OCR-cleaned pathology report text. Free text; restricted tier.", source: reports.text, omop_like: note.note_text, access_tier: restricted, free_text: true}
+
+  slide_images:
+    description: GDC file METADATA for TCGA-BRCA slide images (SVS). No image pixels are stored.
+    grain: file
+    primary_key: [file_id]
+    access_tier: public
+    source: gdc_slides
+    omop_like: "image_occurrence (OHDSI medical-imaging extension; not core CDM)"
+    columns:
+      file_id: {type: TEXT, description: "GDC file UUID.", source: gdc.file_id, omop_like: image_occurrence.image_occurrence_id (source)}
+      patient_id: {type: TEXT, description: "Patient barcode; foreign key to patients.", source: gdc.cases.submitter_id, omop_like: image_occurrence.person_id}
+      sample_id: {type: TEXT, description: "Sample barcode with vial letter, e.g. TCGA-A1-A0SB-01A.", source: gdc.cases.samples.submitter_id, omop_like: "n/a"}
+      sample_type: {type: TEXT, description: "Sample type of the slide's source tissue.", allowed_values: [Primary Tumor, Solid Tissue Normal, Metastatic], source: gdc.cases.samples.sample_type, omop_like: "n/a"}
+      slide_type: {type: TEXT, description: "'Diagnostic Slide' (FFPE, used for diagnosis) or 'Tissue Slide' (frozen section).", allowed_values: [Diagnostic Slide, Tissue Slide], source: gdc.experimental_strategy, omop_like: image_occurrence.modality (source)}
+      data_format: {type: TEXT, description: "File format.", allowed_values: [SVS], source: gdc.data_format, omop_like: "n/a"}
+      file_size_bytes: {type: INTEGER, unit: bytes, description: "File size of the slide image.", source: gdc.file_size, omop_like: "n/a"}
+      gdc_access: {type: TEXT, description: "GDC access level of the file.", allowed_values: [open, controlled], source: gdc.access, omop_like: "n/a"}
+
+  data_availability:
+    description: One row per patient summarizing which data modalities exist. Use for 'how many patients have X and Y' questions.
+    grain: patient
+    primary_key: [patient_id]
+    access_tier: public
+    source: derived from all tables
+    omop_like: "n/a (cohort-discovery convenience table)"
+    columns:
+      patient_id: {type: TEXT, description: "Patient barcode; foreign key to patients.", source: derived, omop_like: person.person_source_value}
+      has_survival: {type: INTEGER, description: "1 if both os_days and pfi_days are non-null and > 0.", allowed_values: [0, 1], source: derived}
+      has_receptor_status: {type: INTEGER, description: "1 if er_status, pr_status and her2_status are all non-null.", allowed_values: [0, 1], source: derived}
+      has_rna_tumor: {type: INTEGER, description: "1 if a primary-tumor (01) RNA-seq sample exists.", allowed_values: [0, 1], source: derived}
+      has_rna_normal: {type: INTEGER, description: "1 if a solid-tissue-normal (11) RNA-seq sample exists.", allowed_values: [0, 1], source: derived}
+      has_pathology_report: {type: INTEGER, description: "1 if a pathology report exists.", allowed_values: [0, 1], source: derived}
+      n_diagnostic_slides: {type: INTEGER, unit: files, description: "Number of diagnostic (FFPE) slide image files.", source: derived}
+      n_tissue_slides: {type: INTEGER, unit: files, description: "Number of tissue (frozen) slide image files.", source: derived}
+      has_diagnostic_slide: {type: INTEGER, description: "1 if n_diagnostic_slides > 0.", allowed_values: [0, 1], source: derived}
+
+relationships:
+  - "clinical.patient_id -> patients.patient_id (1:1)"
+  - "data_availability.patient_id -> patients.patient_id (1:1)"
+  - "rna_samples.patient_id -> patients.patient_id (many:1)"
+  - "gene_expression.sample_id -> rna_samples.sample_id (many:1)"
+  - "pathology_reports.patient_id -> patients.patient_id (1:1 in this release)"
+  - "slide_images.patient_id -> patients.patient_id (many:1)"

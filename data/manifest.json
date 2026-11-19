@@ -1,0 +1,101 @@
+{
+  "sources": {
+    "cdr": {
+      "url": "https://api.gdc.cancer.gov/data/1b5f413e-a8d1-4d10-92eb-7c4ae739ed81",
+      "license": "NCI Genomic Data Commons open-access PanCanAtlas publication supplement; TCGA open-access data (NIH TCGA publication guidelines, no access restrictions)",
+      "citation": "Liu J, et al. An integrated TCGA pan-cancer clinical data resource to drive high-quality survival outcome analytics. Cell 2018;173:400-416.",
+      "retrieved_at": "2026-11-18T21:54:37.130384+00:00",
+      "file": "TCGA-CDR-SupplementalTableS1.xlsx",
+      "sha256": "ea594c0fbb6731477c7ac511fab449ca9c38b0d42d269591ed9f5c4090e75a5a",
+      "bytes": 2945129,
+      "obtained": "copied from sibling repo tcga-multimodal-text-lab/data/raw/TCGA-CDR-SupplementalTableS1.xlsx"
+    },
+    "rna": {
+      "url": "https://tcga.xenahubs.net/download/TCGA.BRCA.sampleMap/HiSeqV2.gz",
+      "license": "UCSC Xena TCGA hub; dataset metadata security=public, redistribution=true; underlying TCGA open-access Level 3 data",
+      "citation": "Goldman MJ, et al. Visualizing and interpreting cancer genomics data via the Xena platform. Nat Biotechnol 2020. Data: TCGA BRCA IlluminaHiSeq RNASeqV2, log2(RSEM norm_count+1), Xena version 2017-10-13.",
+      "retrieved_at": "2026-11-18T21:56:39.930547+00:00",
+      "file": "HiSeqV2.gz",
+      "sha256": "263bf67245cc4b9062676583c0ff0306f08471a26aafd5504037e1da22133746",
+      "bytes": 64286337,
+      "obtained": "copied from sibling repo tcga-multimodal-text-lab/data/raw/HiSeqV2.gz"
+    },
+    "rna_metadata": {
+      "url": "https://tcga.xenahubs.net/download/TCGA.BRCA.sampleMap/HiSeqV2.json",
+      "license": "UCSC Xena dataset metadata",
+      "citation": "UCSC Xena",
+      "retrieved_at": "2026-11-18T21:56:40.477747+00:00",
+      "file": "HiSeqV2.json",
+      "sha256": "13adefb51409b49f71955c90c36a4d7b6aebaa31ec7ae3afa0f10d2387e9b0e5",
+      "bytes": 2570,
+      "obtained": "copied from sibling repo tcga-multimodal-text-lab/data/raw/HiSeqV2.json"
+    },
+    "reports": {
+      "url": "https://raw.githubusercontent.com/jkefeli/tcga-path-reports/main/TCGA_Reports.csv.zip",
+      "license": "CC BY 4.0 (Mendeley Data DOI 10.17632/hyg5xkznpx.1); code repository jkefeli/tcga-path-reports is MIT",
+      "citation": "Kefeli J, Tatonetti N. TCGA-Reports: A machine-readable pathology report resource for benchmarking text-based AI models. Patterns 2024.",
+      "retrieved_at": "2026-11-18T21:54:22.665584+00:00",
+      "file": "TCGA_Reports.csv.zip",
+      "sha256": "bbbc0ee0c75d8feb0bb246b4fa40e8e29bba9775d4a9e4f41e0b73a7955e1c12",
+      "bytes": 10913820,
+      "obtained": "copied from sibling repo tcga-multimodal-text-lab/data/raw/TCGA_Reports.csv.zip"
+    },
+    "xena_clinical": {
+      "file": "BRCA_clinicalMatrix",
+      "url": "https://tcga.xenahubs.net/download/TCGA.BRCA.sampleMap/BRCA_clinicalMatrix",
+      "license": "UCSC Xena TCGA hub phenotype matrix (TCGA open-access clinical data, Xena version 2019-12-06)",
+      "citation": "Goldman MJ, et al. Visualizing and interpreting cancer genomics data via the Xena platform. Nat Biotechnol 2020.",
+      "retrieved_at": "2026-11-19T13:19:57.143476+00:00",
+      "sha256": "39eb3be0fb86e6a577bd2cc01502a7fa5a271e1e1cba294e9dc644ad99580d7f",
+      "bytes": 1698413
+    },
+    "xena_clinical_metadata": {
+      "file": "BRCA_clinicalMatrix.json",
+      "url": "https://tcga.xenahubs.net/download/TCGA.BRCA.sampleMap/BRCA_clinicalMatrix.json",
+      "license": "UCSC Xena dataset metadata",
+      "citation": "UCSC Xena",
+      "retrieved_at": "2026-11-19T13:19:57.145880+00:00",
+      "sha256": "62d77fb63892b7f2c000b2b7594a9d36edb20fc563875943e6278fb8ffe8085c",
+      "bytes": 319
+    },
+    "gdc_slides": {
+      "file": "gdc_brca_slide_files.json",
+      "url": "https://api.gdc.cancer.gov/files (POST)",
+      "request_body": {
+        "filters": {
+          "op": "and",
+          "content": [
+            {
+              "op": "in",
+              "content": {
+                "field": "cases.project.project_id",
+                "value": [
+                  "TCGA-BRCA"
+                ]
+              }
+            },
+            {
+              "op": "in",
+              "content": {
+                "field": "data_type",
+                "value": [
+                  "Slide Image"
+                ]
+              }
+            }
+          ]
+        },
+        "fields": "file_id,file_name,file_size,data_format,data_type,experimental_strategy,access,cases.submitter_id,cases.samples.sample_type,cases.samples.submitter_id,md5sum,updated_datetime",
+        "format": "JSON",
+        "size": "5000"
+      },
+      "license": "NCI Genomic Data Commons open-access file metadata (slide images themselves NOT downloaded)",
+      "citation": "Grossman RL, et al. Toward a shared vision for cancer genomic data. NEJM 2016 (NCI GDC).",
+      "retrieved_at": "2026-11-19T13:19:57.156155+00:00",
+      "sha256": "4ec14f1ac3aba57a19861b323c1ef1828416063e7b5ed20bed70714b86e0b8a3",
+      "bytes": 1696996,
+      "n_files": 3112
+    }
+  },
+  "fetched_at": "2026-11-19T13:19:57.157943+00:00"
+}
