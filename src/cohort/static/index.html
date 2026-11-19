@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cohort Explorer</title>
+<style>
+  :root { --bg:#f7f7f5; --fg:#1d1d1b; --muted:#6b6b66; --card:#fff; --line:#deddd8; --accent:#1f5f8b; --warn:#9a3b12; --ok:#2e6b34; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:14px 20px; border-bottom:1px solid var(--line); background:var(--card); display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:17px; margin:0; }
+  header .note { color:var(--muted); font-size:12px; }
+  nav button { border:1px solid var(--line); background:var(--card); padding:6px 12px; cursor:pointer; border-radius:4px; }
+  nav button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  main { max-width:1100px; margin:0 auto; padding:16px; }
+  section { display:none; } section.on { display:block; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:14px; margin-bottom:14px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { text-align:left; padding:4px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  code, pre { font:12px/1.4 ui-monospace, monospace; }
+  pre { background:#f0f0ec; padding:8px; overflow-x:auto; white-space:pre-wrap; border-radius:4px; }
+  .tier-restricted { color:var(--warn); font-weight:600; }
+  .sup { color:var(--warn); font-weight:600; }
+  .err { color:var(--warn); } .okc { color:var(--ok); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:2px; }
+  select, input[type=text], input[type=number], textarea { width:100%; padding:5px; border:1px solid var(--line); border-radius:4px; font:inherit; }
+  select[multiple] { height:92px; }
+  .btn { background:var(--accent); color:#fff; border:0; padding:7px 14px; border-radius:4px; cursor:pointer; }
+  ul.checks { margin:4px 0; padding-left:18px; color:var(--ok); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TCGA-BRCA Research Cohort Explorer</h1>
+  <span class="note">Prototype on public, de-identified TCGA data. Not a clinical or hospital system. No PHI.</span>
+  <nav>
+    <button data-tab="catalog" class="on">Catalog</button>
+    <button data-tab="cohort">Cohort builder</button>
+    <button data-tab="ask">Ask (NL to SQL)</button>
+  </nav>
+  <span><label for="role">Role (simulated)</label>
+    <select id="role"><option value="researcher">researcher (aggregate only)</option><option value="approved">approved (row-level + restricted)</option></select></span>
+</header>
+<main>
+<section id="catalog" class="on">
+  <div class="card"><label for="q">Search the catalog</label><input id="q" type="text" placeholder="e.g. receptor, slide, survival days"></div>
+  <div id="hits"></div>
+  <div id="tables"></div>
+</section>
+
+<section id="cohort">
+  <div class="card">
+    <div class="grid" id="filters"></div>
+    <div class="grid" style="margin-top:10px">
+      <div><label>Age min</label><input id="age_min" type="number"></div>
+      <div><label>Age max</label><input id="age_max" type="number"></div>
+      <div><label>Triple-negative</label><select id="tn"><option value="">any</option><option value="1">yes</option><option value="0">no</option></select></div>
+      <div><label>Breakdown by</label><select id="breakdown"></select></div>
+    </div>
+    <div style="margin-top:10px"><label>Require data availability</label><div id="require"></div></div>
+    <p><button class="btn" id="run-cohort">Count cohort</button></p>
+  </div>
+  <div id="cohort-out"></div>
+</section>
+
+<section id="ask">
+  <div class="card">
+    <label for="question">Question</label>
+    <textarea id="question" rows="2">How many triple-negative patients have a primary-tumor RNA-seq sample and a diagnostic slide?</textarea>
+    <p><select id="backend" style="width:auto"><option value="auto">LLM if configured, else template</option><option value="template">template fallback</option></select>
+    <button class="btn" id="run-ask">Ask</button></p>
+  </div>
+  <div id="ask-out"></div>
+</section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const role = () => $('#role').value;
+async function api(path, body) {
+  const r = await fetch(path, body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {});
+  return r.json();
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button, section').forEach(e => e.classList.remove('on'));
+  b.classList.add('on'); $('#' + b.dataset.tab).classList.add('on');
+});
+
+function resultTable(res) {
+  if (!res.ok) return `<p class="err">Rejected at <b>${esc(res.error_stage)}</b>: ${esc(res.error)}</p><pre>${esc(res.sql)}</pre>`;
+  const head = res.columns.map(c => `<th>${esc(c)}</th>`).join('');
+  const body = res.rows.map(r => '<tr>' + r.map(v => v === '<11' ? `<td class="sup">&lt;11</td>` : `<td>${v === null ? '<i>NULL</i>' : esc(typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : v)}</td>`).join('') + '</tr>').join('');
+  return `<table><tr>${head}</tr>${body}</table>
+    <p>${res.row_count} row(s)${res.truncated ? ` (truncated at ${res.max_rows})` : ''}; suppressed cells: ${res.suppressed_cells}; export: ${res.exportable ? 'allowed' : 'blocked'} (${esc(res.export_note)})</p>
+    <details><summary>Executed SQL and checks</summary><pre>${esc(res.executed_sql)}</pre><ul class="checks">${res.checks.map(c => `<li>${esc(c)}</li>`).join('')}</ul></details>`;
+}
+
+async function loadCatalog() {
+  const cat = await api('/api/catalog');
+  $('#tables').innerHTML = cat.tables.map(t => `<div class="card"><h3 style="margin:0">${t.name} <span class="${t.access_tier==='restricted'?'tier-restricted':''}">[${t.access_tier}]</span></h3>
+    <p>${esc(t.description)}<br><small>grain: ${t.grain}; source: ${esc(t.source)}; OMOP-like: ${esc(t.omop_like)}</small></p>
+    <table><tr><th>column</th><th>type</th><th>description</th><th>unit</th><th>tier</th><th>OMOP-like</th></tr>
+    ${t.columns.map(c => `<tr><td><code>${c.name}</code></td><td>${c.type}</td><td>${esc(c.description)}${c.allowed_values ? `<br><small>values: ${esc(c.allowed_values.join(' | '))}</small>` : ''}</td><td>${esc(c.unit)}</td><td class="${c.access_tier==='restricted'?'tier-restricted':''}">${c.access_tier}${c.free_text?' (free text)':''}</td><td><small>${esc(c.omop_like)}</small></td></tr>`).join('')}
+    </table></div>`).join('');
+}
+$('#q').oninput = async e => {
+  const q = e.target.value.trim();
+  if (!q) { $('#hits').innerHTML = ''; return; }
+  const r = await api('/api/catalog/search?q=' + encodeURIComponent(q));
+  $('#hits').innerHTML = `<div class="card"><b>${r.hits.length} match(es)</b><table>${r.hits.slice(0, 15).map(h => `<tr><td><code>${h.table}.${h.column}</code></td><td>${esc(h.description)}</td><td>${h.access_tier}</td></tr>`).join('')}</table></div>`;
+};
+
+async function loadOptions() {
+  const o = await api('/api/options');
+  $('#filters').innerHTML = Object.entries(o.filters).map(([k, vals]) => `<div><label>${k}</label><select multiple data-filter="${k}">${vals.map(v => `<option>${esc(v)}</option>`).join('')}</select></div>`).join('');
+  $('#breakdown').innerHTML = '<option value="">none</option>' + Object.keys(o.filters).map(k => `<option ${k==='stage_group'?'selected':''}>${k}</option>`).join('');
+  $('#require').innerHTML = o.require.map(f => `<label style="display:inline-block;margin-right:12px;color:inherit"><input type="checkbox" value="${f}"> ${f}</label>`).join('');
+}
+$('#run-cohort').onclick = async () => {
+  const filters = {};
+  document.querySelectorAll('[data-filter]').forEach(s => { const v = [...s.selectedOptions].map(o => o.value); if (v.length) filters[s.dataset.filter] = v; });
+  if ($('#age_min').value) filters.age_min = +$('#age_min').value;
+  if ($('#age_max').value) filters.age_max = +$('#age_max').value;
+  if ($('#tn').value) filters.triple_negative = $('#tn').value === '1';
+  filters.require = [...document.querySelectorAll('#require input:checked')].map(i => i.value);
+  const r = await api('/api/cohort', {filters, breakdown: $('#breakdown').value || null, role: role()});
+  $('#cohort-out').innerHTML = !r.ok ? `<p class="err">${esc(r.error)}</p>` :
+    `<div class="card"><h3>Cohort counts per modality</h3>${resultTable(r.summary)}</div>` + (r.breakdown ? `<div class="card"><h3>Breakdown</h3>${resultTable(r.breakdown)}</div>` : '');
+};
+$('#run-ask').onclick = async () => {
+  $('#ask-out').innerHTML = '<p>Working...</p>';
+  const r = await api('/api/ask', {question: $('#question').value, role: role(), backend: $('#backend').value});
+  const attempts = r.attempts.map((a, i) => `<li>attempt ${i+1}: ${a.refuse ? 'model refused: ' + esc(a.reason) : `<pre>${esc(a.sql)}</pre>`}${a.guard_error ? `<span class="err">guard: ${esc(a.guard_error)}</span>` : ''}</li>`).join('');
+  $('#ask-out').innerHTML = `<div class="card"><p><b>Outcome:</b> ${esc(r.outcome)} &middot; <small>${esc(r.backend)}</small></p><ol>${attempts}</ol>${r.result ? resultTable(r.result) : ''}</div>`;
+};
+loadCatalog(); loadOptions();
+</script>
+</body>
+</html>
