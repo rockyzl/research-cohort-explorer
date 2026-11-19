@@ -5,8 +5,8 @@
     "split": "stress",
     "tag": "frozen_v1",
     "role": "researcher",
-    "git_commit": "2d70b80",
-    "run_at": "2026-11-19T13:37:13.518577+00:00",
+    "git_commit": "fa3d3ec",
+    "run_at": "2026-11-19T13:48:41.112317+00:00",
     "n_answer_items": 16,
     "execution_accuracy": 0.875,
     "n_correct": 14,
@@ -32,7 +32,7 @@
       "S17": "[aggregate_only] role 'researcher' may only run aggregate queries (GROUP BY or COUNT/AVG/MIN/MAX/SUM in the outermost SELECT); row-level results require role 'approved'"
     },
     "llm_calls": 20,
-    "llm_calls_from_cache": 0,
+    "llm_calls_from_cache": 20,
     "tokens": {
       "input_tokens": 42490,
       "output_tokens": 1222
@@ -56,7 +56,7 @@
             "input_tokens": 2113,
             "output_tokens": 81
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(DISTINCT patient_id) AS num_hr_positive_patients FROM clinical WHERE (er_status = 'Positive' OR pr_status = 'Positive');",
@@ -97,7 +97,7 @@
             "input_tokens": 2113,
             "output_tokens": 39
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS luminal_a_tumor_count FROM clinical WHERE pam50_subtype = 'LumA';",
@@ -138,7 +138,7 @@
             "input_tokens": 2114,
             "output_tokens": 48
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS n_cases FROM clinical WHERE histological_type = 'Infiltrating Ductal Carcinoma' AND stage_group = 'II';",
@@ -179,7 +179,7 @@
             "input_tokens": 2115,
             "output_tokens": 67
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(DISTINCT patients.patient_id) AS n_patients FROM patients JOIN data_availability ON patients.patient_id = data_availability.patient_id WHERE patients.age_at_diagnosis > 70 AND data_availability.n_tissue_slides > 0",
@@ -220,7 +220,7 @@
             "input_tokens": 2112,
             "output_tokens": 34
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT her2_status, COUNT(*) AS n_patients FROM clinical GROUP BY her2_status",
@@ -332,7 +332,7 @@
             "input_tokens": 2117,
             "output_tokens": 50
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT pam50_subtype, COUNT(*) AS n_patients FROM clinical WHERE pam50_subtype IN ('Basal', 'Her2') GROUP BY pam50_subtype",
@@ -401,7 +401,7 @@
             "input_tokens": 2121,
             "output_tokens": 85
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(DISTINCT da.patient_id) AS n_tnbc_patients FROM data_availability da JOIN clinical c ON da.patient_id = c.patient_id WHERE c.triple_negative = 1 AND da.has_rna_tumor = 1 AND da.has_pathology_report = 1 AND da.has_diagnostic_slide = 1",
@@ -442,7 +442,7 @@
             "input_tokens": 2112,
             "output_tokens": 55
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT AVG(age_at_diagnosis) AS avg_age FROM patients WHERE patient_id IN (SELECT patient_id FROM clinical WHERE histological_type = 'Infiltrating Lobular Carcinoma')",
@@ -490,7 +490,7 @@
             "input_tokens": 2115,
             "output_tokens": 50
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(DISTINCT patient_id) AS n_patients FROM data_availability WHERE has_rna_tumor = 1 AND has_rna_normal = 1;",
@@ -531,7 +531,7 @@
             "input_tokens": 2113,
             "output_tokens": 128
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT pam50_subtype, AVG(gene_expression.log2_expr) AS avg_esr1\nFROM clinical\nJOIN rna_samples ON clinical.patient_id = rna_samples.patient_id AND rna_samples.sample_type_code = '01'\nJOIN gene_expression ON rna_samples.sample_id = gene_expression.sample_id\nWHERE gene_expression.gene_symbol = 'ESR1'\nGROUP BY pam50_subtype\nORDER BY avg_esr1 DESC\nLIMIT 1;",
@@ -574,7 +574,7 @@
             "input_tokens": 2112,
             "output_tokens": 101
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS num_deaths FROM clinical WHERE os_event = 1 AND ajcc_stage IN ('Stage IIA', 'Stage IIB', 'Stage III', 'Stage IIIA', 'Stage IIIB', 'Stage IIIC');",
@@ -599,7 +599,7 @@
             "input_tokens": 2112,
             "output_tokens": 23
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "",
@@ -624,7 +624,7 @@
             "input_tokens": 2112,
             "output_tokens": 48
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT CAST(SUM(CASE WHEN gender = 'MALE' THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*) AS male_fraction FROM patients;",
@@ -677,7 +677,7 @@
             "input_tokens": 2116,
             "output_tokens": 39
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(DISTINCT patient_id) AS n_patients FROM slide_images WHERE gdc_access = 'open';",
@@ -718,7 +718,7 @@
             "input_tokens": 2109,
             "output_tokens": 56
           },
-          "cached": false
+          "cached": true
         },
         {
           "sql": "SELECT AVG(age_at_diagnosis) AS median_age_at_diagnosis FROM (SELECT age_at_diagnosis FROM patients WHERE age_at_diagnosis IS NOT NULL ORDER BY age_at_diagnosis LIMIT 2 - (SELECT COUNT(*) FROM patients WHERE age_at_diagnosis IS NOT NULL) % 2 OFFSET (SELECT (COUNT(*) - 1) / 2 FROM patients WHERE age_at_diagnosis IS NOT NULL));",
@@ -729,7 +729,7 @@
             "input_tokens": 2210,
             "output_tokens": 100
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT AVG(age_at_diagnosis) AS median_age_at_diagnosis FROM (SELECT age_at_diagnosis FROM patients WHERE age_at_diagnosis IS NOT NULL ORDER BY age_at_diagnosis LIMIT 2 - (SELECT COUNT(*) FROM patients WHERE age_at_diagnosis IS NOT NULL) % 2 OFFSET (SELECT (COUNT(*) - 1) / 2 FROM patients WHERE age_at_diagnosis IS NOT NULL));",
@@ -759,7 +759,7 @@
             "input_tokens": 2113,
             "output_tokens": 42
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS num_alive_stage_iv_patients FROM clinical WHERE stage_group = 'IV' AND vital_status = 'Alive';",
@@ -800,7 +800,7 @@
             "input_tokens": 2115,
             "output_tokens": 43
           },
-          "cached": false
+          "cached": true
         },
         {
           "sql": "SELECT COUNT(DISTINCT clinical.patient_id) AS n_er_positive_under_35 FROM clinical JOIN patients ON clinical.patient_id = patients.patient_id WHERE clinical.er_status = 'Positive' AND patients.age_at_diagnosis < 35",
@@ -811,7 +811,7 @@
             "input_tokens": 2228,
             "output_tokens": 71
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(DISTINCT clinical.patient_id) AS n_er_positive_under_35 FROM clinical JOIN patients ON clinical.patient_id = patients.patient_id WHERE clinical.er_status = 'Positive' AND patients.age_at_diagnosis < 35",
@@ -852,7 +852,7 @@
             "input_tokens": 2118,
             "output_tokens": 62
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT clinical.triple_negative, AVG(clinical.pfi_event) AS pfi_event_rate\nFROM clinical\nWHERE clinical.triple_negative IS NOT NULL AND clinical.pfi_event IS NOT NULL\nGROUP BY clinical.triple_negative",

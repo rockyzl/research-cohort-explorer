@@ -1,6 +1,6 @@
 # Demo transcript
 
-Generated 2026-11-19 13:44 UTC by `scripts/demo.py` against the in-process app. NL-to-SQL backend: **Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt v1)**. Every value below is the live API response.
+Generated 2026-11-19 13:48 UTC by `scripts/demo.py` against the in-process app. NL-to-SQL backend: **Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt v1)**. Every value below is the live API response.
 
 ## 1. Catalog search: "receptor"
 | table.column | tier | description |

@@ -1,12 +1,12 @@
 {
   "summary": {
-    "backend": "Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0)",
+    "backend": "Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt v1)",
     "prompt_version": "v1",
     "split": "test",
     "tag": "frozen_v1",
     "role": "researcher",
-    "git_commit": "b349101-dirty",
-    "run_at": "2026-11-19T13:34:20.368469+00:00",
+    "git_commit": "fa3d3ec",
+    "run_at": "2026-11-19T13:48:40.490740+00:00",
     "n_answer_items": 28,
     "execution_accuracy": 1.0,
     "n_correct": 28,
@@ -21,6 +21,8 @@
     "first_attempt_guard_rejections": 0,
     "repaired_then_correct": 0,
     "silent_wrong_answers": [],
+    "guard_blocked_ids": [],
+    "first_attempt_guard_errors": {},
     "llm_calls": 34,
     "llm_calls_from_cache": 34,
     "tokens": {
@@ -56,13 +58,13 @@
           97
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           97
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           97
@@ -97,13 +99,13 @@
           342
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           342
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           342
@@ -138,13 +140,13 @@
           157
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           157
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           157
@@ -192,6 +194,8 @@
           20
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           "I",
@@ -210,8 +214,6 @@
           20
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "I",
@@ -259,13 +261,13 @@
           190
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           190
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           190
@@ -313,6 +315,8 @@
           43.2
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           "Indeterminate",
@@ -331,8 +335,6 @@
           43.2
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "Indeterminate",
@@ -380,13 +382,13 @@
           35
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           35
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           35
@@ -421,13 +423,13 @@
           112
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           112
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           112
@@ -479,6 +481,8 @@
           1
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           "Basal",
@@ -501,8 +505,6 @@
           1
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "Basal",
@@ -554,13 +556,13 @@
           94
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           94
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           94
@@ -600,6 +602,8 @@
           14.74
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           "Negative",
@@ -610,8 +614,6 @@
           14.74
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "Negative",
@@ -651,13 +653,13 @@
           145
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           145
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           145
@@ -692,13 +694,13 @@
           1115.0
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           1115.0
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           1115.0
@@ -733,13 +735,13 @@
           61
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           61
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           61
@@ -774,13 +776,13 @@
           1153.8
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           1153.8
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           1153.8
@@ -816,14 +818,14 @@
           780
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           "Infiltrating Ductal Carcinoma",
           780
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "Infiltrating Ductal Carcinoma",
@@ -859,13 +861,13 @@
           335
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           335
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           335
@@ -900,13 +902,13 @@
           2
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           2
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "<11"
@@ -941,13 +943,13 @@
           540
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           540
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           540
@@ -995,6 +997,8 @@
           1
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           "WHITE",
@@ -1013,8 +1017,6 @@
           1
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "WHITE",
@@ -1062,13 +1064,13 @@
           65
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           65
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           65
@@ -1120,6 +1122,8 @@
           9.92
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           "Basal",
@@ -1142,8 +1146,6 @@
           9.92
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "Basal",
@@ -1195,13 +1197,13 @@
           49
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           49
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           49
@@ -1237,14 +1239,14 @@
           82
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           35,
           82
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           35,
@@ -1280,13 +1282,13 @@
           7
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           7
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "<11"
@@ -1321,13 +1323,13 @@
           59
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           59
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           59
@@ -1362,13 +1364,13 @@
           95.5
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           95.5
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           95.5
@@ -1403,13 +1405,13 @@
           19
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           19
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           19

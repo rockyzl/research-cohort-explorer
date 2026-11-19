@@ -1,12 +1,12 @@
 {
   "summary": {
-    "backend": "Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0)",
+    "backend": "Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt v1)",
     "prompt_version": "v1",
     "split": "dev",
     "tag": "prompt_v1",
     "role": "researcher",
-    "git_commit": "b349101",
-    "run_at": "2026-11-19T13:34:18.912558+00:00",
+    "git_commit": "fa3d3ec",
+    "run_at": "2026-11-19T13:48:39.803651+00:00",
     "n_answer_items": 12,
     "execution_accuracy": 1.0,
     "n_correct": 12,
@@ -21,6 +21,8 @@
     "first_attempt_guard_rejections": 0,
     "repaired_then_correct": 0,
     "silent_wrong_answers": [],
+    "guard_blocked_ids": [],
+    "first_attempt_guard_errors": {},
     "llm_calls": 15,
     "llm_calls_from_cache": 15,
     "tokens": {
@@ -56,13 +58,13 @@
           1092
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           1092
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           1092
@@ -97,13 +99,13 @@
           12
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           12
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           12
@@ -138,13 +140,13 @@
           805
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           805
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           805
@@ -196,6 +198,8 @@
           23
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           "Basal",
@@ -218,8 +222,6 @@
           23
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "Basal",
@@ -271,13 +273,13 @@
           55.2
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           55.2
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           55.2
@@ -312,13 +314,13 @@
           993
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           993
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           993
@@ -353,13 +355,13 @@
           1127
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           1127
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           1127
@@ -394,13 +396,13 @@
           53
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           53
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           53
@@ -435,13 +437,13 @@
           6.92
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           6.92
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           6.92
@@ -493,6 +495,8 @@
           78
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           "BH",
@@ -515,8 +519,6 @@
           78
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           "BH",
@@ -568,13 +570,13 @@
           15
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           15
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           15
@@ -609,13 +611,13 @@
           112
         ]
       ],
+      "correct": true,
+      "correct_lenient": true,
       "predicted_result": [
         [
           112
         ]
       ],
-      "correct": true,
-      "correct_lenient": true,
       "shown_to_user": [
         [
           112
