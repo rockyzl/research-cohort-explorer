@@ -3,8 +3,8 @@
     "llm_v1_dev": {
       "file": "eval_azure-openai_dev_prompt_v1.json",
       "backend": "Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt v1)",
-      "git_commit": "fa3d3ec",
-      "run_at": "2026-11-19T13:48:39.803651+00:00",
+      "git_commit": "063c446",
+      "run_at": "2026-11-19T13:51:48.021755+00:00",
       "llm_calls": 15,
       "llm_calls_from_cache": 15,
       "tokens": {
@@ -17,6 +17,8 @@
       },
       "silent_wrong_answers": [],
       "first_attempt_guard_errors": {},
+      "shown_vs_scored_mismatches": [],
+      "n_items_shown_and_scored": 12,
       "by_split": {
         "dev": {
           "answer_correct": 12,
@@ -30,8 +32,8 @@
     "llm_v1_test": {
       "file": "eval_azure-openai_test_frozen_v1.json",
       "backend": "Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt v1)",
-      "git_commit": "fa3d3ec",
-      "run_at": "2026-11-19T13:48:40.490740+00:00",
+      "git_commit": "063c446",
+      "run_at": "2026-11-19T13:51:49.421809+00:00",
       "llm_calls": 34,
       "llm_calls_from_cache": 34,
       "tokens": {
@@ -44,6 +46,8 @@
       },
       "silent_wrong_answers": [],
       "first_attempt_guard_errors": {},
+      "shown_vs_scored_mismatches": [],
+      "n_items_shown_and_scored": 28,
       "by_split": {
         "test": {
           "answer_correct": 28,
@@ -57,8 +61,8 @@
     "llm_v1_stress": {
       "file": "eval_azure-openai_stress_frozen_v1.json",
       "backend": "Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt v1)",
-      "git_commit": "fa3d3ec",
-      "run_at": "2026-11-19T13:48:41.112317+00:00",
+      "git_commit": "063c446",
+      "run_at": "2026-11-19T13:51:50.389992+00:00",
       "llm_calls": 20,
       "llm_calls_from_cache": 20,
       "tokens": {
@@ -77,6 +81,8 @@
         "S15": "[function_allowlist] function 'percentile_cont' is not allowed",
         "S17": "[aggregate_only] role 'researcher' may only run aggregate queries (GROUP BY or COUNT/AVG/MIN/MAX/SUM in the outermost SELECT); row-level results require role 'approved'"
       },
+      "shown_vs_scored_mismatches": [],
+      "n_items_shown_and_scored": 15,
       "by_split": {
         "stress": {
           "answer_correct": 14,
@@ -90,8 +96,8 @@
     "llm_bare_everything": {
       "file": "eval_azure-openai_bare_everything_ablation.json",
       "backend": "Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt bare)",
-      "git_commit": "fa3d3ec",
-      "run_at": "2026-11-19T13:48:42.181113+00:00",
+      "git_commit": "063c446",
+      "run_at": "2026-11-19T13:51:51.987487+00:00",
       "llm_calls": 72,
       "llm_calls_from_cache": 72,
       "tokens": {
@@ -113,6 +119,8 @@
         "S15": "[function_allowlist] function 'percentile_cont' is not allowed",
         "S17": "[aggregate_only] role 'researcher' may only run aggregate queries (GROUP BY or COUNT/AVG/MIN/MAX/SUM in the outermost SELECT); row-level results require role 'approved'"
       },
+      "shown_vs_scored_mismatches": [],
+      "n_items_shown_and_scored": 56,
       "by_split": {
         "dev": {
           "answer_correct": 12,
@@ -140,8 +148,8 @@
     "llm_permissive_everything": {
       "file": "eval_azure-openai_permissive_everything_ablation.json",
       "backend": "Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt permissive)",
-      "git_commit": "fa3d3ec",
-      "run_at": "2026-11-19T13:48:43.277910+00:00",
+      "git_commit": "063c446",
+      "run_at": "2026-11-19T13:51:54.164789+00:00",
       "llm_calls": 79,
       "llm_calls_from_cache": 79,
       "tokens": {
@@ -171,6 +179,8 @@
         "S15": "[function_allowlist] function 'percentile_cont' is not allowed",
         "S17": "[column_allowlist] unresolvable column or table: Column 'patient_id' could not be resolved"
       },
+      "shown_vs_scored_mismatches": [],
+      "n_items_shown_and_scored": 54,
       "by_split": {
         "dev": {
           "answer_correct": 12,
@@ -198,8 +208,8 @@
     "template_all": {
       "file": "eval_template_all_baseline.json",
       "backend": "deterministic keyword-template fallback (no LLM)",
-      "git_commit": "fa3d3ec",
-      "run_at": "2026-11-19T13:48:43.846384+00:00",
+      "git_commit": "063c446",
+      "run_at": "2026-11-19T13:51:55.002546+00:00",
       "llm_calls": 0,
       "llm_calls_from_cache": 0,
       "tokens": {},
@@ -222,6 +232,8 @@
         "T28"
       ],
       "first_attempt_guard_errors": {},
+      "shown_vs_scored_mismatches": [],
+      "n_items_shown_and_scored": 31,
       "by_split": {
         "dev": {
           "answer_correct": 8,

@@ -5,8 +5,8 @@
     "split": "test",
     "tag": "frozen_v1",
     "role": "researcher",
-    "git_commit": "fa3d3ec",
-    "run_at": "2026-11-19T13:48:40.490740+00:00",
+    "git_commit": "063c446",
+    "run_at": "2026-11-19T13:51:49.421809+00:00",
     "n_answer_items": 28,
     "execution_accuracy": 1.0,
     "n_correct": 28,
@@ -508,7 +508,7 @@
       "shown_to_user": [
         [
           "Basal",
-          "<11"
+          "suppressed"
         ],
         [
           "Her2",
@@ -1028,7 +1028,7 @@
         ],
         [
           "ASIAN",
-          "<11"
+          "suppressed"
         ],
         [
           "AMERICAN INDIAN OR ALASKA NATIVE",

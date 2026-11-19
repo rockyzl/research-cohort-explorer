@@ -67,3 +67,13 @@ attempted, what went wrong, how it was caught. `docs/ai-assisted-engineering.md`
   invented "node-positive = stage II-III" under all three prompts; TR4 -> under the bare and
   permissive prompts the model asserted site code `BS` *is* Boston Children's Hospital. Both are
   valid, aggregate, suppressed SQL. Details in `docs/evaluation.md`.
+- **Within-row complement leak in the cohort builder (found in final review).** The live smoke
+  test returned, for the Basal cohort, `patients=139, with_survival=138, with_pathology_report=132,
+  with_diagnostic_slide=136`, so subtraction revealed cells of 1, 7 and 3. Secondary suppression
+  only worked down a column. The `<11` marker was also printed on complementary cells whose true
+  value was large (ASIAN = 61). Flagged by the reviewer model reading the smoke-test output. Fix:
+  within-row complementary suppression (blank the smaller of any two count columns differing by
+  1-10, iterate) and a distinct `suppressed` marker. Also added a standing test that the result
+  shown to users (qualified/rewritten SQL) equals the scored raw result on all unsuppressed
+  values for all 56 reference queries, and the same check over every saved evaluation item
+  (0 mismatches). All runs were re-scored from the cache (0 new LLM calls).

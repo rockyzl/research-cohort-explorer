@@ -5,8 +5,8 @@
     "split": "stress",
     "tag": "frozen_v1",
     "role": "researcher",
-    "git_commit": "fa3d3ec",
-    "run_at": "2026-11-19T13:48:41.112317+00:00",
+    "git_commit": "063c446",
+    "run_at": "2026-11-19T13:51:50.389992+00:00",
     "n_answer_items": 16,
     "execution_accuracy": 0.875,
     "n_correct": 14,
@@ -298,7 +298,7 @@
         ],
         [
           "Equivocal",
-          "<11"
+          "suppressed"
         ],
         [
           "Indeterminate",

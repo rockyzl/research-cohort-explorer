@@ -62,7 +62,7 @@ question ─► LLM (Azure OpenAI GPT-4.1, temp 0) or template fallback
         ─► Layer 1 sqlglot guard ──reject──► one repair attempt with the guard's error ─► reject = final
         ─► output-policy rewrite (hidden cell size) ─► re-validated
         ─► Layer 2 SQLite: mode=ro + query_only + authorizer (independent column allow-list) + timeout + row cap
-        ─► small-cell suppression (n<11, all statistics in small cells, secondary suppression)
+        ─► small-cell suppression (n<11, all statistics in small cells, within-row + within-column complements)
         ─► answer with executed SQL, checks passed, row count, suppressed-cell count, export decision
 ```
 
@@ -88,7 +88,7 @@ question ─► LLM (Azure OpenAI GPT-4.1, temp 0) or template fallback
 | Table and column allow-list from the catalog | sqlglot `qualify` against the catalog schema (layer 1); SQLite authorizer re-checks every column read (layer 2) |
 | Access tiers | `researcher` (default): public columns only, **aggregate-only output**, no identifier columns in output. `approved` (simulated authorization): row-level output and restricted `report_text` |
 | Function allow-list; `GROUP_CONCAT` denied (it can smuggle IDs into an "aggregate") | both layers |
-| Small-cell suppression, n < 11 | All statistics in a cell with fewer than 11 distinct patients are blanked, along with count columns of 1–10. Secondary suppression blanks the next-smallest cell so the value cannot be recovered by subtraction within a column |
+| Small-cell suppression, n < 11 | All statistics in a cell with fewer than 11 distinct patients are blanked (`<11`), along with count values of 1–10. Complementary suppression (`suppressed`) blanks (a) any count column in the same row that differs from another by 1–10, e.g. `patients=139, with_survival=138` would reveal 1 patient, and (b) the next-smallest cell in a column when only one cell was blanked. This is conservative: it does not know which columns are subsets of which, so it over-suppresses |
 | No free text in exports; row-level results not exportable | `/api/export` |
 | Row cap 200, 3 s timeout | layer 2 |
 | Executed SQL, checks passed and counts always shown | every API response |
@@ -102,7 +102,7 @@ Layer 2 does not trust layer 1. `tests/test_engine_layer.py` runs 13 attacks wit
 
 The gold set has 49 questions: 40 answerable and 9 that should be refused. They are split into **dev (15)** and **test (34)**.
 
-**Scoring.** Execution accuracy compares the raw result of the generated SQL with the reference SQL's result, before suppression. The comparison:
+**Scoring.** Execution accuracy compares the raw result of the generated SQL with the reference SQL's result, before suppression. Users are shown the result of the guard's qualified rewrite after suppression, so a separate check confirms the two agree on every unsuppressed value. It covers all 56 reference queries (`tests/test_privacy.py`) and every saved evaluation item (`shown_vs_scored_mismatches` in `results/summary.json`): 0 mismatches. The comparison:
 
 - ignores row order, unless the question asks for top-N;
 - ignores column names (any permutation of columns can match);
@@ -131,7 +131,7 @@ All runs use the Azure OpenAI deployment `gpt-4.1` at temperature 0, except the 
 
 The **stress set** ([`gold/stress.yaml`](gold/stress.yaml)) was written *after* the 100% result. It uses colloquial phrasing ("HR+", "luminal A", "frozen sections", "node-positive") and was committed before its first run. That is where the informative failures are.
 
-**Guard ablation.** In the permissive-generator run, the model attempted unsafe SQL 7 times on 7 items, and **0 of those queries executed**:
+**Guard ablation.** In the permissive-generator run, the model attempted unsafe SQL 7 times on 7 items, and **0 of those queries executed**. All 7 were stopped by the static layer (layer 1). The engine layer's independent blocking of the same attack classes is shown separately, by tests that run with layer 1 switched off. The 7 attempts were:
 
 - 4 restricted-text reads;
 - 2 writes;
@@ -158,7 +158,7 @@ Full SQL for each case is in `results/eval_*.json`, and the write-up is in [`doc
 uv sync
 make data          # fetch/copy raw files, verify hashes, build data/cohort.sqlite (≈3 s, ≈170 MB RSS)
 make verify-gold   # pandas cross-check of all reference answers
-make test          # 133 pytest tests (guards, engine layer, privacy, catalog, harness, API)
+make test          # 191 pytest tests (guards, engine layer, privacy, catalog, harness, API)
 make eval-template # deterministic baseline, no network
 make eval-llm      # needs `az login` and a .env (see .env.example); reuses results/llm_cache.jsonl
 make summary       # results/summary.json + the tables above
@@ -173,7 +173,7 @@ make serve         # http://127.0.0.1:8790
 ## Limitations
 
 - **Self-authored gold set.** The 100% dev/test result has limited external validity (see above). There are no third-party questions and no clinician review.
-- **Partial suppression.** Small-cell suppression is per-query only. **Cross-query differencing** is not prevented, for example `count(stage II)` minus `count(stage II and ER+)`. There is no query budget and no auditing-based inference control. The cell size is distinct patients only when the outer `FROM` has a patient-keyed table; otherwise it is row count.
+- **Partial suppression.** Small-cell suppression is per-response only. The cohort summary and breakdown are suppressed separately, so the two can be differenced together. A breakdown's suppressed rows can also be differenced against the cohort total. **Cross-query differencing** is not prevented, for example `count(stage II)` minus `count(stage II and ER+)`. There is no query budget and no auditing-based inference control. The cell size is distinct patients only when the outer `FROM` has a patient-keyed table; otherwise it is row count.
 - **Simulated authorization.** Roles are a request field, with no authentication or IRB/DUA workflow behind them. "Restricted" on TCGA report text is illustrative, since the text is public.
 - **Narrow data model.** The HER2 combined call is a simple rule: IHC or ISH Positive gives Positive, and 12 IHC+/ISH− patients are therefore called Positive. The rule is documented in the catalog but has not been clinically adjudicated. The expression table is a 10-gene panel, not the transcriptome. There is no lymph-node, treatment or imaging-pixel data.
 - **Single model.** There is one model and one temperature-0 run per configuration; run-to-run variance was not measured.

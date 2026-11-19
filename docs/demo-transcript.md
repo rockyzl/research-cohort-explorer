@@ -1,6 +1,6 @@
 # Demo transcript
 
-Generated 2026-11-19 13:48 UTC by `scripts/demo.py` against the in-process app. NL-to-SQL backend: **Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt v1)**. Every value below is the live API response.
+Generated 2026-11-19 13:51 UTC by `scripts/demo.py` against the in-process app. NL-to-SQL backend: **Azure OpenAI deployment 'gpt-4.1' (api 2024-10-21, temperature 0, prompt v1)**. Every value below is the live API response.
 
 ## 1. Catalog search: "receptor"
 | table.column | tier | description |
@@ -30,15 +30,15 @@ Filters: `{"er_status": ["Positive"], "her2_status": ["Negative"], "require": ["
 
 | patients | with_survival | with_receptor_status | with_rna_tumor | with_pathology_report | with_diagnostic_slide | with_rna_report_slide |
 |---|---|---|---|---|---|---|
-| 539 | 533 | 539 | 539 | 539 | 539 | 539 |
+| 539 | suppressed | 539 | 539 | 539 | 539 | 539 |
 
-Rows: 1; suppressed cells: 0; export: allowed (aggregate result with small-cell suppression).
+Rows: 1; suppressed cells: 1; export: allowed (aggregate result with small-cell suppression).
 
 Executed SQL:
 ```sql
 SELECT COUNT(*) AS patients, SUM(a.has_survival) AS with_survival, SUM(a.has_receptor_status) AS with_receptor_status, SUM(a.has_rna_tumor) AS with_rna_tumor, SUM(a.has_pathology_report) AS with_pathology_report, SUM(a.has_diagnostic_slide) AS with_diagnostic_slide, SUM(a.has_rna_tumor * a.has_pathology_report * a.has_diagnostic_slide) AS with_rna_report_slide, COUNT(DISTINCT p.patient_id) AS __cell_n FROM patients AS p JOIN clinical AS c ON c.patient_id = p.patient_id JOIN data_availability AS a ON a.patient_id = p.patient_id WHERE c.er_status IN ('Positive') AND c.her2_status IN ('Negative') AND a.has_rna_tumor = 1 AND a.has_pathology_report = 1 AND a.has_diagnostic_slide = 1
 ```
-Checks passed: parsed as one SQLite statement; SELECT-only, no DDL/DML/PRAGMA/ATTACH; tables in catalog allow-list: ['clinical', 'data_availability', 'patients']; functions in allow-list; 10 column(s) resolved against catalog and readable by role 'researcher'; aggregate-only output with no identifier columns (researcher tier); executed on read-only connection with engine authorizer (role 'researcher')
+Checks passed: parsed as one SQLite statement; SELECT-only, no DDL/DML/PRAGMA/ATTACH; tables in catalog allow-list: ['clinical', 'data_availability', 'patients']; functions in allow-list; 10 column(s) resolved against catalog and readable by role 'researcher'; aggregate-only output with no identifier columns (researcher tier); executed on read-only connection with engine authorizer (role 'researcher'); small-cell suppression blanked 1 cell(s) (n<11)
 
 Breakdown:
 
@@ -133,7 +133,7 @@ Checks passed: parsed as one SQLite statement; SELECT-only, no DDL/DML/PRAGMA/AT
 race,patients
 ,95
 AMERICAN INDIAN OR ALASKA NATIVE,<11
-ASIAN,<11
+ASIAN,suppressed
 BLACK OR AFRICAN AMERICAN,183
 WHITE,752
 # small-cell suppression: values 1-10 shown as <11; suppressed cells: 2
