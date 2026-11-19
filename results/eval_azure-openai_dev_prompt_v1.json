@@ -5,8 +5,8 @@
     "split": "dev",
     "tag": "prompt_v1",
     "role": "researcher",
-    "git_commit": "772f391",
-    "run_at": "2026-11-19T13:29:21.106603+00:00",
+    "git_commit": "069b0fd",
+    "run_at": "2026-11-19T13:34:09.255634+00:00",
     "n_answer_items": 12,
     "execution_accuracy": 1.0,
     "n_correct": 12,
@@ -22,7 +22,7 @@
     "repaired_then_correct": 0,
     "silent_wrong_answers": [],
     "llm_calls": 15,
-    "llm_calls_from_cache": 0,
+    "llm_calls_from_cache": 15,
     "tokens": {
       "input_tokens": 31781,
       "output_tokens": 643
@@ -46,7 +46,7 @@
             "input_tokens": 2112,
             "output_tokens": 24
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS patient_count FROM patients;",
@@ -87,7 +87,7 @@
             "input_tokens": 2111,
             "output_tokens": 32
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS male_patient_count FROM patients WHERE gender = 'MALE';",
@@ -128,7 +128,7 @@
             "input_tokens": 2111,
             "output_tokens": 34
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS n_er_positive_patients FROM clinical WHERE er_status = 'Positive';",
@@ -169,7 +169,7 @@
             "input_tokens": 2120,
             "output_tokens": 43
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT pam50_subtype, COUNT(*) AS patient_count FROM clinical WHERE pam50_subtype IS NOT NULL GROUP BY pam50_subtype",
@@ -261,7 +261,7 @@
             "input_tokens": 2122,
             "output_tokens": 59
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT ROUND(AVG(patients.age_at_diagnosis), 1) AS mean_age_at_diagnosis FROM patients JOIN clinical ON patients.patient_id = clinical.patient_id WHERE clinical.triple_negative = 1",
@@ -302,7 +302,7 @@
             "input_tokens": 2129,
             "output_tokens": 53
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS n_patients FROM data_availability WHERE has_pathology_report = 1 AND has_rna_tumor = 1 AND has_diagnostic_slide = 1;",
@@ -343,7 +343,7 @@
             "input_tokens": 2115,
             "output_tokens": 36
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS total_diagnostic_slide_files FROM slide_images WHERE slide_type = 'Diagnostic Slide';",
@@ -384,7 +384,7 @@
             "input_tokens": 2119,
             "output_tokens": 45
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(DISTINCT patient_id) AS n_patients FROM clinical WHERE stage_group = 'III' AND her2_status = 'Positive';",
@@ -425,7 +425,7 @@
             "input_tokens": 2128,
             "output_tokens": 103
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT ROUND(AVG(gene_expression.log2_expr), 2) AS avg_esr1_expr\nFROM gene_expression\nJOIN rna_samples ON gene_expression.sample_id = rna_samples.sample_id\nJOIN clinical ON gene_expression.patient_id = clinical.patient_id\nWHERE gene_expression.gene_symbol = 'ESR1'\n  AND rna_samples.sample_type_code = '01'\n  AND clinical.er_status = 'Negative'",
@@ -466,7 +466,7 @@
             "input_tokens": 2128,
             "output_tokens": 41
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT tissue_source_site, COUNT(*) AS patient_count FROM patients GROUP BY tissue_source_site ORDER BY patient_count DESC LIMIT 5;",
@@ -558,7 +558,7 @@
             "input_tokens": 2114,
             "output_tokens": 39
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(*) AS num_patients FROM clinical WHERE stage_group = 'IV' AND vital_status = 'Dead';",
@@ -599,7 +599,7 @@
             "input_tokens": 2118,
             "output_tokens": 40
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "SELECT COUNT(DISTINCT patient_id) AS num_patients FROM rna_samples WHERE sample_type_code = '11';",
@@ -640,7 +640,7 @@
             "input_tokens": 2121,
             "output_tokens": 36
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "",
@@ -665,7 +665,7 @@
             "input_tokens": 2115,
             "output_tokens": 29
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "",
@@ -690,7 +690,7 @@
             "input_tokens": 2118,
             "output_tokens": 29
           },
-          "cached": false
+          "cached": true
         }
       ],
       "final_sql": "",

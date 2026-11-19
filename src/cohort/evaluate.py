@@ -65,7 +65,7 @@ def results_match(pred: list, ref: list, ordered: bool = False, lenient: bool = 
 
 def _git_commit() -> str:
     try:
-        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True,
+        return subprocess.run(["git", "describe", "--always", "--dirty"], cwd=ROOT, capture_output=True,
                               text=True, check=True).stdout.strip()
     except Exception:
         return "unknown"

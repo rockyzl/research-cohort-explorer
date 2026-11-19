@@ -15,7 +15,11 @@ Layer 2 - engine enforcement in SQLite (during execution):
     role allow-list and denies every action other than SELECT/READ/allow-listed FUNCTION;
   * progress handler aborts queries that run too long; fetchmany caps rows.
 
-Layer 2 does not trust layer 1: tests disable layer 1 and show layer 2 still blocks each attack.
+Layer 2 does not trust layer 1: tests/test_engine_layer.py calls execute() WITHOUT validate() and
+shows layer 2 still blocks each attack.
+
+Researcher tier (role "researcher"): the outermost SELECT must aggregate and may not output
+identifier columns. Row-level output requires role "approved".
 """
 from __future__ import annotations
 
@@ -139,7 +143,44 @@ def validate(sql: str, role: str = "researcher", catalog: Catalog | None = None)
                                      f"column {t}.{c} is restricted; role '{role}' is not authorized")
                 columns.add((t, c))
     checks.append(f"{len(columns)} column(s) resolved against catalog and readable by role '{role}'")
+
+    if role == "researcher":
+        for sel in outer_selects(qualified):
+            if not is_aggregate_select(sel):
+                raise GuardError("aggregate_only",
+                                 "role 'researcher' may only run aggregate queries (GROUP BY or COUNT/AVG/MIN/MAX/SUM "
+                                 "in the outermost SELECT); row-level results require role 'approved'")
+            for proj in sel.expressions:
+                for col in proj.find_all(exp.Column):
+                    if (col.name.lower() in IDENTIFIER_COLUMNS and col.find_ancestor(exp.Select) is sel
+                            and col.find_ancestor(exp.AggFunc) is None):
+                        raise GuardError("identifier_output",
+                                         f"role 'researcher' may not output identifier column '{col.name}' "
+                                         "(use it in COUNT(DISTINCT ...) or WHERE instead)")
+        checks.append("aggregate-only output with no identifier columns (researcher tier)")
     return Validated(sql=sql.strip().rstrip(";"), tree=qualified, tables=tables, columns=columns, checks=checks)
+
+
+IDENTIFIER_COLUMNS = {"patient_id", "sample_id", "file_id", "report_id"}
+
+
+def outer_selects(tree: exp.Expression) -> list[exp.Select]:
+    """The SELECTs whose rows reach the user: the root, or every leaf of a set operation."""
+    if isinstance(tree, exp.SetOperation):
+        return outer_selects(tree.this) + outer_selects(tree.expression)
+    if isinstance(tree, exp.Subquery):
+        return outer_selects(tree.this)
+    return [tree] if isinstance(tree, exp.Select) else []
+
+
+def is_aggregate_select(sel: exp.Select) -> bool:
+    if sel.args.get("group"):
+        return True
+    for proj in sel.expressions:
+        for node in proj.find_all(exp.AggFunc):
+            if node.find_ancestor(exp.Select) is sel:
+                return True
+    return False
 
 
 # --------------------------------------------------------------------------------------------

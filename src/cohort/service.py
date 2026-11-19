@@ -26,10 +26,8 @@ def run_sql(sql: str, role: str = "researcher") -> dict:
         v = validate(sql, role)
         out["checks"] = list(v.checks)
         pol = privacy.plan(v.tree)
-        exec_sql = v.sql
-        if pol.rewritten_sql:
-            validate(pol.rewritten_sql, role)  # the policy rewrite gets no special trust
-            exec_sql = pol.rewritten_sql
+        exec_sql = pol.rewritten_sql
+        validate(exec_sql, role)  # the policy rewrite gets no special trust
         res = execute(_con(role), exec_sql)
         cols, rows, n_sup = privacy.apply(res.columns, res.rows, pol)
         ok_export, why = privacy.exportable(v.columns, pol)

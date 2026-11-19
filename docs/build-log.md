@@ -24,3 +24,23 @@ attempted, what went wrong, how it was caught. `docs/ai-assisted-engineering.md`
   `p.hist` resolved to the pandas `DataFrame.hist` plotting method rather than the `hist` column.
   Fixed by indexing `p["hist"]`. After the fix all 40 answerable reference answers agreed with the
   independent pandas re-implementation (`results/gold_verification.json`).
+- **Suppression leak found in review, before any test existed.** `run_sql` analysed the
+  sqlglot-*qualified* tree to find count columns but executed the user's *original* SQL text.
+  qualify names an unaliased `COUNT(*)` `_col_1`, SQLite names it `COUNT(*)`, so nothing matched:
+  `WITH t AS (SELECT race, COUNT(*) FROM patients GROUP BY race) SELECT * FROM t` returned
+  `AMERICAN INDIAN OR ALASKA NATIVE = 1` unsuppressed. Flagged by an independent review pass
+  (advisor model) and reproduced before fixing. Fixes:
+  1. the executed SQL is now always generated from the qualified tree (so names match), and is
+     re-validated;
+  2. the hidden cell-size column is added to every leaf of a set operation (UNION of two small
+     counts previously had no cell-size check);
+  3. a new researcher-tier rule: the outermost SELECT must aggregate, and identifier columns
+     (patient_id, sample_id, file_id, report_id) may not be output except inside an aggregate.
+     Row-level output now requires role `approved`. This makes small-cell suppression meaningful;
+     before, a researcher could read the same values row by row.
+  Regression tests: `tests/test_privacy.py`. All 40 gold reference queries return the same raw
+  values through the qualified/rewritten path.
+- **Guard change after the first test run.** The test split had already been run once with prompt v1
+  when (3) above was added. The prompt did not change, so the dev/test runs were repeated from the
+  LLM response cache (identical model outputs, no new calls) to make the saved results reflect the
+  final guard code.

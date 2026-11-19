@@ -21,6 +21,7 @@ from sqlglot import exp
 from sqlglot.optimizer.scope import traverse_scope
 
 from cohort.catalog import Catalog, load_catalog
+from cohort.sqlguard import is_aggregate_select, outer_selects
 
 THRESHOLD = 11
 CELL_COL = "__cell_n"
@@ -50,6 +51,10 @@ def _contains_count(e: exp.Expression) -> bool:
 
 
 def plan(tree: exp.Expression, catalog: Catalog | None = None) -> Policy:
+    """`tree` must be the QUALIFIED tree from sqlguard.validate, and the SQL that is executed must be
+    generated from it (rewritten_sql), so output column names match the aliases analysed here.
+    (Executing the user's original text instead let an unaliased COUNT(*) inside a CTE escape
+    suppression - see docs/build-log.md.)"""
     cat = catalog or load_catalog()
     count_cols: set[str] = set()
     for scope in traverse_scope(tree):
@@ -58,28 +63,33 @@ def plan(tree: exp.Expression, catalog: Catalog | None = None) -> Policy:
                 if _contains_count(proj):
                     count_cols.add(proj.alias_or_name.lower())
 
-    if not isinstance(tree, exp.Select):
-        return Policy(aggregate=False, rewritten_sql=None, count_columns=count_cols, stat_columns=set(),
-                      notes=["set operation: only count-column suppression applied"])
-    is_agg = bool(tree.args.get("group")) or any(_contains_agg(p) for p in tree.expressions)
-    if not is_agg:
-        return Policy(aggregate=False, rewritten_sql=None, count_columns=count_cols, stat_columns=set())
-
-    stat_cols = {p.alias_or_name.lower() for p in tree.expressions if _contains_agg(p)}
-    root = traverse_scope(tree)[-1]
-    cell = None
-    for alias, src in root.sources.items():
-        if isinstance(src, exp.Table) and "patient_id" in cat.columns.get(src.name.lower(), {}):
-            cell = exp.Count(this=exp.Distinct(expressions=[exp.column("patient_id", table=alias)]))
-            note = f"cell size = distinct patients in {src.name}"
-            break
-    if cell is None:
-        cell = exp.Count(this=exp.Star())
-        note = "cell size = contributing rows (no patient-keyed base table in outer FROM)"
     rewritten = tree.copy()
-    rewritten.select(exp.alias_(cell, CELL_COL), copy=False)
-    return Policy(aggregate=True, rewritten_sql=rewritten.sql("sqlite"), count_columns=count_cols,
-                  stat_columns=stat_cols, notes=[note])
+    leaves = outer_selects(rewritten)
+    agg_leaves = [s for s in leaves if is_aggregate_select(s)]
+    stat_cols: set[str] = set()
+    notes = []
+    # The hidden cell-size column must be added to every leaf of a set operation or to none.
+    if agg_leaves and len(agg_leaves) == len(leaves):
+        root_scopes = {id(sc.expression): sc for sc in traverse_scope(rewritten)}
+        for sel in leaves:
+            stat_cols |= {p.alias_or_name.lower() for p in sel.expressions if _contains_agg(p)}
+            sc = root_scopes.get(id(sel))
+            cell = None
+            for alias, src in (sc.sources.items() if sc else []):
+                if isinstance(src, exp.Table) and "patient_id" in cat.columns.get(src.name.lower(), {}):
+                    cell = exp.Count(this=exp.Distinct(expressions=[exp.column("patient_id", table=alias)]))
+                    notes.append(f"cell size = distinct patients in {src.name}")
+                    break
+            if cell is None:
+                cell = exp.Count(this=exp.Star())
+                notes.append("cell size = contributing rows (no patient-keyed base table in outer FROM)")
+            sel.select(exp.alias_(cell, CELL_COL), copy=False)
+        aggregate = True
+    else:
+        aggregate = False
+        notes.append("row-level result: only count-column suppression applies")
+    return Policy(aggregate=aggregate, rewritten_sql=rewritten.sql("sqlite"), count_columns=count_cols,
+                  stat_columns=stat_cols, notes=notes)
 
 
 def apply(columns: list[str], rows: list[tuple], policy: Policy) -> tuple[list[str], list[list], int]:
