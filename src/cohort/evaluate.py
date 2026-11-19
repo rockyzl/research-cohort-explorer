@@ -25,6 +25,7 @@ from cohort.service import run_sql_raw
 from cohort.sqlguard import GuardError
 
 GOLD = ROOT / "gold" / "gold.yaml"
+STRESS = ROOT / "gold" / "stress.yaml"
 
 
 def _norm(v):
@@ -64,16 +65,30 @@ def results_match(pred: list, ref: list, ordered: bool = False, lenient: bool = 
 
 
 def _git_commit() -> str:
+    """HEAD commit, marked -dirty if CODE differs from it (results/ and data/ are ignored)."""
     try:
-        return subprocess.run(["git", "describe", "--always", "--dirty"], cwd=ROOT, capture_output=True,
+        head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True,
                               text=True, check=True).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--", ".", ":!results", ":!data"], cwd=ROOT,
+                               capture_output=True, text=True, check=True).stdout.strip()
+        return head + ("-dirty" if dirty else "")
     except Exception:
         return "unknown"
 
 
-def evaluate(backend_name: str, split: str, tag: str = "run1", role: str = "researcher") -> dict:
-    items = [it for it in yaml.safe_load(GOLD.read_text())["items"] if split in ("all", it["split"])]
-    backend = get_backend(backend_name)
+def load_items(split: str) -> list[dict]:
+    items = yaml.safe_load(GOLD.read_text())["items"]
+    if split in ("stress", "everything"):
+        items = items + yaml.safe_load(STRESS.read_text())["items"]
+    if split in ("all", "everything"):
+        return items
+    return [it for it in items if it["split"] == split]
+
+
+def evaluate(backend_name: str, split: str, tag: str = "run1", role: str = "researcher",
+             variant: str = PROMPT_VERSION) -> dict:
+    items = load_items(split)
+    backend = get_backend(backend_name, variant)
     rows = []
     for it in items:
         resp = ask(it["question"], role=role, backend=backend)
@@ -82,9 +97,12 @@ def evaluate(backend_name: str, split: str, tag: str = "run1", role: str = "rese
                "attempts": [{k: a.get(k) for k in ("sql", "refuse", "reason", "guard_error", "usage", "cached")}
                             for a in resp["attempts"]],
                "final_sql": resp["sql"], "reference_sql": it.get("sql")}
-        if it["kind"] == "answer":
-            ref = run_sql_raw(it["sql"]).rows
-            rec["reference_result"] = ref
+        if it["kind"] in ("answer", "either"):
+            refs = [run_sql_raw(q).rows for q in [it["sql"], *it.get("sql_alternatives", [])]]
+            rec["reference_result"] = refs[0]
+            if len(refs) > 1:
+                rec["alternative_results"] = refs[1:]
+            rec["correct"] = rec["correct_lenient"] = False
             if resp["outcome"] == "valid":
                 try:
                     pred = run_sql_raw(resp["sql"]).rows
@@ -92,20 +110,20 @@ def evaluate(backend_name: str, split: str, tag: str = "run1", role: str = "rese
                     pred, rec["outcome"] = None, f"execution_error: {e.message}"
                 rec["predicted_result"] = pred
                 if pred is not None:
-                    rec["correct"] = results_match(pred, ref, it.get("ordered", False))
-                    rec["correct_lenient"] = results_match(pred, ref, it.get("ordered", False), lenient=True)
+                    o = it.get("ordered", False)
+                    rec["correct"] = any(results_match(pred, r, o) for r in refs)
+                    rec["correct_lenient"] = any(results_match(pred, r, o, lenient=True) for r in refs)
                     rec["shown_to_user"] = resp["result"].get("rows")
                     rec["suppressed_cells"] = resp["result"].get("suppressed_cells")
-                else:
-                    rec["correct"] = rec["correct_lenient"] = False
-            else:
-                rec["correct"] = rec["correct_lenient"] = False
+            elif it["kind"] == "either" and resp["outcome"] in ("model_refused", "guard_rejected"):
+                rec["correct"] = rec["correct_lenient"] = True
+                rec["blocked_by"] = {"model_refused": "model", "guard_rejected": "guard"}[resp["outcome"]]
         else:
             rec["correct"] = resp["outcome"] in ("model_refused", "guard_rejected")
             rec["blocked_by"] = {"model_refused": "model", "guard_rejected": "guard"}.get(resp["outcome"])
         rows.append(rec)
 
-    ans = [r for r in rows if r["kind"] == "answer"]
+    ans = [r for r in rows if r["kind"] in ("answer", "either")]
     ref_items = [r for r in rows if r["kind"] == "refuse"]
     usage = Counter()
     n_calls = n_cached = 0
@@ -116,7 +134,7 @@ def evaluate(backend_name: str, split: str, tag: str = "run1", role: str = "rese
                 n_cached += bool(a.get("cached"))
                 usage.update(a["usage"])
     summary = {
-        "backend": backend.label, "prompt_version": PROMPT_VERSION, "split": split, "tag": tag, "role": role,
+        "backend": backend.label, "prompt_version": getattr(backend, "variant", "n/a"), "split": split, "tag": tag, "role": role,
         "git_commit": _git_commit(), "run_at": datetime.now(timezone.utc).isoformat(),
         "n_answer_items": len(ans),
         "execution_accuracy": round(sum(r["correct"] for r in ans) / len(ans), 4) if ans else None,
@@ -129,10 +147,13 @@ def evaluate(backend_name: str, split: str, tag: str = "run1", role: str = "rese
         "first_attempt_guard_rejections": sum(1 for r in rows if r["attempts"][0].get("guard_error")),
         "repaired_then_correct": sum(1 for r in rows if r["repaired"] and r["correct"]),
         "silent_wrong_answers": [r["id"] for r in ans if r["outcome"] == "valid" and not r["correct"]],
+        "guard_blocked_ids": [r["id"] for r in rows if r["outcome"] == "guard_rejected"],
+        "first_attempt_guard_errors": {r["id"]: r["attempts"][0]["guard_error"] for r in rows
+                                       if r["attempts"][0].get("guard_error")},
         "llm_calls": n_calls, "llm_calls_from_cache": n_cached, "tokens": dict(usage),
     }
     out = {"summary": summary, "items": rows}
-    name = f"eval_{backend.name}_{split}_{tag}.json"
+    name = f"eval_{backend.name}{'' if variant == PROMPT_VERSION else '_' + variant}_{split}_{tag}.json"
     (ROOT / "results" / name).write_text(json.dumps(out, indent=2, default=str) + "\n")
     print(json.dumps(summary, indent=2))
     return out
@@ -141,10 +162,11 @@ def evaluate(backend_name: str, split: str, tag: str = "run1", role: str = "rese
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--backend", default="auto", choices=["auto", "azure", "template"])
-    ap.add_argument("--split", default="dev", choices=["dev", "test", "all"])
+    ap.add_argument("--split", default="dev", choices=["dev", "test", "all", "stress", "everything"])
     ap.add_argument("--tag", default="run1")
+    ap.add_argument("--variant", default=PROMPT_VERSION, choices=[PROMPT_VERSION, "bare", "permissive"])
     a = ap.parse_args()
-    evaluate(a.backend, a.split, a.tag)
+    evaluate(a.backend, a.split, a.tag, variant=a.variant)
 
 
 if __name__ == "__main__":

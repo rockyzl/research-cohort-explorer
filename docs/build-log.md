@@ -44,3 +44,13 @@ attempted, what went wrong, how it was caught. `docs/ai-assisted-engineering.md`
   when (3) above was added. The prompt did not change, so the dev/test runs were repeated from the
   LLM response cache (identical model outputs, no new calls) to make the saved results reflect the
   final guard code.
+- **Guard false positive: valid SQLite that sqlglot cannot parse.** Writing the stress-set median
+  reference, `LIMIT 2 - (SELECT COUNT(...) FROM patients) % 2 OFFSET (...)` runs in SQLite but
+  sqlglot 27 fails to parse it ("Expecting )"). Parenthesizing the LIMIT expression fixes it. The
+  guard fails closed, so this is a usability cost, not a safety hole, but it means the guard
+  can reject correct model SQL; it is listed under limitations.
+- **Stress set + ablations added after 100%.** Prompt v1 scored 12/12 + 3/3 on dev and 28/28 + 6/6 on
+  test, but the prompt rules (her2_status, stage_group, COUNT DISTINCT, primary-tumor samples,
+  "excluding missing") were written by the same author as the questions. Added, and committed
+  before running: `gold/stress.yaml` (colloquial phrasing), a bare-schema prompt ablation, and a
+  permissive-generator ablation that exercises the guard.

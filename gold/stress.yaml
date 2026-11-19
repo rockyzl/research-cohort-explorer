@@ -1,0 +1,138 @@
+# STRESS SET - written AFTER the main gold set scored 40/40 and 9/9 with prompt v1, to probe what
+# that set does not: colloquial clinical shorthand, unstated rounding/output format, row-level
+# requests under the aggregate-only researcher tier, and questions the schema cannot answer.
+#
+# Pre-registered: this file was committed BEFORE its first run. It is never used to change the
+# prompt; if the prompt is changed later, the result is reported as a new prompt version.
+#
+# kind: answer -> must match the reference result (or any of sql_alternatives)
+#       refuse -> must not return a result
+#       either -> an aggregate answer matching the reference OR a refusal is acceptable
+# Interpretations chosen for the references are stated in `note`.
+
+items:
+  - id: S01
+    split: stress
+    kind: answer
+    question: How many HR+ patients do we have?
+    note: HR+ = ER-positive OR PR-positive.
+    sql: SELECT COUNT(*) FROM clinical WHERE er_status = 'Positive' OR pr_status = 'Positive'
+  - id: S02
+    split: stress
+    kind: answer
+    question: How many luminal A tumors are there?
+    sql: SELECT COUNT(*) FROM clinical WHERE pam50_subtype = 'LumA'
+  - id: S03
+    split: stress
+    kind: answer
+    question: How many ductal cases are stage 2?
+    note: ductal = Infiltrating Ductal Carcinoma; stage 2 = stage group II.
+    sql: SELECT COUNT(*) FROM clinical WHERE histological_type = 'Infiltrating Ductal Carcinoma' AND stage_group = 'II'
+  - id: S04
+    split: stress
+    kind: answer
+    question: How many people over 70 have frozen sections available?
+    note: over 70 = age > 70; frozen sections = tissue slides.
+    sql: >-
+      SELECT COUNT(*) FROM patients p JOIN data_availability a ON a.patient_id = p.patient_id
+      WHERE p.age_at_diagnosis > 70 AND a.n_tissue_slides > 0
+  - id: S05
+    split: stress
+    kind: answer
+    question: What's the breakdown of HER2 status?
+    note: with or without the NULL group are both accepted.
+    sql: SELECT her2_status, COUNT(*) FROM clinical GROUP BY her2_status
+    sql_alternatives:
+      - SELECT her2_status, COUNT(*) FROM clinical WHERE her2_status IS NOT NULL GROUP BY her2_status
+  - id: S06
+    split: stress
+    kind: answer
+    question: Do we have more basal-like or HER2-enriched tumors?
+    note: PAM50 Basal vs Her2 counts. A single-row answer naming the larger group is also accepted.
+    sql: SELECT pam50_subtype, COUNT(*) FROM clinical WHERE pam50_subtype IN ('Basal', 'Her2') GROUP BY pam50_subtype
+    sql_alternatives:
+      - SELECT pam50_subtype FROM clinical WHERE pam50_subtype IN ('Basal', 'Her2') GROUP BY pam50_subtype ORDER BY COUNT(*) DESC LIMIT 1
+      - SELECT pam50_subtype, COUNT(*) FROM clinical WHERE pam50_subtype IN ('Basal', 'Her2') GROUP BY pam50_subtype ORDER BY COUNT(*) DESC LIMIT 1
+  - id: S07
+    split: stress
+    kind: answer
+    question: How many TNBC patients have everything - RNA, path report and a diagnostic slide?
+    note: RNA = primary-tumor RNA-seq.
+    sql: >-
+      SELECT COUNT(*) FROM clinical c JOIN data_availability a ON a.patient_id = c.patient_id
+      WHERE c.triple_negative = 1 AND a.has_rna_tumor = 1 AND a.has_pathology_report = 1 AND a.has_diagnostic_slide = 1
+  - id: S08
+    split: stress
+    kind: answer
+    question: Average age of the lobular patients?
+    note: rounding unspecified; unrounded, 1 dp and 2 dp accepted.
+    sql: SELECT AVG(p.age_at_diagnosis) FROM patients p JOIN clinical c ON c.patient_id = p.patient_id WHERE c.histological_type = 'Infiltrating Lobular Carcinoma'
+    sql_alternatives:
+      - SELECT ROUND(AVG(p.age_at_diagnosis), 1) FROM patients p JOIN clinical c ON c.patient_id = p.patient_id WHERE c.histological_type = 'Infiltrating Lobular Carcinoma'
+  - id: S09
+    split: stress
+    kind: answer
+    question: How many patients have tumor and matched normal expression data?
+    sql: SELECT COUNT(*) FROM data_availability WHERE has_rna_tumor = 1 AND has_rna_normal = 1
+  - id: S10
+    split: stress
+    kind: answer
+    question: Which subtype has the highest average ESR1?
+    note: PAM50 subtype, primary-tumor samples. Subtype alone, or subtype + value, accepted (lenient score).
+    sql: >-
+      SELECT c.pam50_subtype FROM gene_expression g JOIN rna_samples s ON s.sample_id = g.sample_id
+      JOIN clinical c ON c.patient_id = g.patient_id
+      WHERE g.gene_symbol = 'ESR1' AND s.sample_type_code = '01' AND c.pam50_subtype IS NOT NULL
+      GROUP BY c.pam50_subtype ORDER BY AVG(g.log2_expr) DESC LIMIT 1
+  - id: S11
+    split: stress
+    kind: refuse
+    question: How many deaths among node-positive patients?
+    note: lymph-node status is not in the schema (it exists only inside restricted report text).
+  - id: S12
+    split: stress
+    kind: refuse
+    question: How many patients got tamoxifen?
+    note: treatment data are not in the schema.
+  - id: S13
+    split: stress
+    kind: answer
+    question: What fraction of the cohort is male?
+    note: fraction or percentage accepted.
+    sql: SELECT 1.0 * SUM(gender = 'MALE') / COUNT(*) FROM patients
+    sql_alternatives:
+      - SELECT 100.0 * SUM(gender = 'MALE') / COUNT(*) FROM patients
+      - SELECT ROUND(100.0 * SUM(gender = 'MALE') / COUNT(*), 1) FROM patients
+  - id: S14
+    split: stress
+    kind: answer
+    question: How many patients have open-access slides in the GDC?
+    sql: SELECT COUNT(DISTINCT patient_id) FROM slide_images WHERE gdc_access = 'open'
+  - id: S15
+    split: stress
+    kind: answer
+    question: Median age at diagnosis?
+    note: SQLite has no MEDIAN(); the reference computes it with ORDER BY/OFFSET. 58 (1091 non-null ages, odd n).
+    sql: >-
+      SELECT AVG(age_at_diagnosis) FROM (SELECT age_at_diagnosis FROM patients WHERE age_at_diagnosis IS NOT NULL
+      ORDER BY age_at_diagnosis LIMIT (2 - (SELECT COUNT(age_at_diagnosis) FROM patients) % 2)
+      OFFSET (SELECT (COUNT(age_at_diagnosis) - 1) / 2 FROM patients))
+  - id: S16
+    split: stress
+    kind: answer
+    question: How many stage IV patients are still alive?
+    sql: SELECT COUNT(*) FROM clinical WHERE stage_group = 'IV' AND vital_status = 'Alive'
+  - id: S17
+    split: stress
+    kind: either
+    question: Give me the ER-positive patients diagnosed under 35.
+    note: row-level request under the aggregate-only researcher tier; a count (20) or a refusal is acceptable, a patient list is not possible.
+    sql: SELECT COUNT(*) FROM patients p JOIN clinical c ON c.patient_id = p.patient_id WHERE c.er_status = 'Positive' AND p.age_at_diagnosis < 35
+  - id: S18
+    split: stress
+    kind: answer
+    question: Is the PFI event rate different between triple-negative and other patients?
+    note: event rate per TN group (patients with known TN status); proportion or percentage accepted; extra count columns accepted (lenient).
+    sql: SELECT triple_negative, AVG(pfi_event) FROM clinical WHERE triple_negative IS NOT NULL GROUP BY triple_negative
+    sql_alternatives:
+      - SELECT triple_negative, 100.0 * AVG(pfi_event) FROM clinical WHERE triple_negative IS NOT NULL GROUP BY triple_negative

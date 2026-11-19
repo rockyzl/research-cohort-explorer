@@ -1,6 +1,6 @@
 {
-  "n_items": 40,
-  "n_agree": 40,
+  "n_items": 56,
+  "n_agree": 56,
   "items": [
     {
       "id": "D01",
@@ -787,6 +787,284 @@
       "pandas_result": [
         [
           19
+        ]
+      ]
+    },
+    {
+      "id": "S01",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          821
+        ]
+      ],
+      "pandas_result": [
+        [
+          821
+        ]
+      ]
+    },
+    {
+      "id": "S02",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          419
+        ]
+      ],
+      "pandas_result": [
+        [
+          419
+        ]
+      ]
+    },
+    {
+      "id": "S03",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          452
+        ]
+      ],
+      "pandas_result": [
+        [
+          452
+        ]
+      ]
+    },
+    {
+      "id": "S04",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          210
+        ]
+      ],
+      "pandas_result": [
+        [
+          210
+        ]
+      ]
+    },
+    {
+      "id": "S05",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          null,
+          115
+        ],
+        [
+          "Equivocal",
+          21
+        ],
+        [
+          "Indeterminate",
+          4
+        ],
+        [
+          "Negative",
+          756
+        ],
+        [
+          "Positive",
+          196
+        ]
+      ],
+      "pandas_result": [
+        [
+          "Equivocal",
+          21
+        ],
+        [
+          "Indeterminate",
+          4
+        ],
+        [
+          "Negative",
+          756
+        ],
+        [
+          null,
+          115
+        ],
+        [
+          "Positive",
+          196
+        ]
+      ]
+    },
+    {
+      "id": "S06",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "Basal",
+          139
+        ],
+        [
+          "Her2",
+          67
+        ]
+      ],
+      "pandas_result": [
+        [
+          "Basal",
+          139
+        ],
+        [
+          "Her2",
+          67
+        ]
+      ]
+    },
+    {
+      "id": "S07",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          141
+        ]
+      ],
+      "pandas_result": [
+        [
+          141
+        ]
+      ]
+    },
+    {
+      "id": "S08",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          61.63054187192118
+        ]
+      ],
+      "pandas_result": [
+        [
+          61.63054187192118
+        ]
+      ]
+    },
+    {
+      "id": "S09",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          112
+        ]
+      ],
+      "pandas_result": [
+        [
+          112
+        ]
+      ]
+    },
+    {
+      "id": "S10",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "LumB"
+        ]
+      ],
+      "pandas_result": [
+        [
+          "LumB"
+        ]
+      ]
+    },
+    {
+      "id": "S13",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          0.01098901098901099
+        ]
+      ],
+      "pandas_result": [
+        [
+          0.01098901098901099
+        ]
+      ]
+    },
+    {
+      "id": "S14",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          1092
+        ]
+      ],
+      "pandas_result": [
+        [
+          1092
+        ]
+      ]
+    },
+    {
+      "id": "S15",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          58.0
+        ]
+      ],
+      "pandas_result": [
+        [
+          58.0
+        ]
+      ]
+    },
+    {
+      "id": "S16",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          5
+        ]
+      ],
+      "pandas_result": [
+        [
+          5
+        ]
+      ]
+    },
+    {
+      "id": "S17",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          20
+        ]
+      ],
+      "pandas_result": [
+        [
+          20
+        ]
+      ]
+    },
+    {
+      "id": "S18",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          0,
+          0.11703360370799537
+        ],
+        [
+          1,
+          0.17834394904458598
+        ]
+      ],
+      "pandas_result": [
+        [
+          0,
+          0.11703360370799537
+        ],
+        [
+          1,
+          0.17834394904458598
         ]
       ]
     }

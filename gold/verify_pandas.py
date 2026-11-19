@@ -156,6 +156,24 @@ def answers(d) -> dict[str, list[tuple]]:
         "T26": [(int((p.surv & ~p.report).sum()),)],
         "T27": [(round(100.0 * float((p.loc[p.tn == 1, "n_diag"] > 0).mean()), 1),)],
         "T28": [(int(((p.ihc == "Equivocal") & (p.ish == "Positive")).sum()),)],
+        # stress set (gold/stress.yaml), primary reference interpretation
+        "S01": [(int(((p.er == "Positive") | (p.pr == "Positive")).sum()),)],
+        "S02": [(int((p.pam50 == "LumA").sum()),)],
+        "S03": [(int(((p["hist"] == "Infiltrating Ductal Carcinoma") & (p.stage == "II")).sum()),)],
+        "S04": [(int(((p.age > 70) & (p.n_tis > 0)).sum()),)],
+        "S05": sorted((((k if isinstance(k, str) else None), int(v))
+                       for k, v in p.her2.value_counts(dropna=False).items()), key=lambda r: str(r[0])),
+        "S06": vc(p.pam50[p.pam50.isin(["Basal", "Her2"])]),
+        "S07": [(int(((p.tn == 1) & p.rna01 & p.report & (p.n_diag > 0)).sum()),)],
+        "S08": [(float(p.loc[p["hist"] == "Infiltrating Lobular Carcinoma", "age"].mean()),)],
+        "S09": [(int((p.rna01 & p.rna11).sum()),)],
+        "S10": [(max(p.pam50.dropna().unique(), key=lambda s: tumor_mean(d, "ESR1", p.index[p.pam50 == s])),)],
+        "S13": [(float((p.gender == "MALE").mean()),)],
+        "S14": [(int(d["slides"].pid.nunique()),)],
+        "S15": [(float(p.age.median()),)],
+        "S16": [(int(((p.stage == "IV") & (p.vital == "Alive")).sum()),)],
+        "S17": [(int(((p.er == "Positive") & (p.age < 35)).sum()),)],
+        "S18": sorted((int(k), float(v)) for k, v in p.loc[p.tn.notna()].groupby("tn")["pfi"].mean().items()),
     }
     return out
 
@@ -163,12 +181,13 @@ def answers(d) -> dict[str, list[tuple]]:
 def main() -> int:
     from cohort.evaluate import results_match  # same comparator the harness uses
     from cohort.service import run_sql_raw
-    gold = yaml.safe_load((ROOT / "gold" / "gold.yaml").read_text())["items"]
+    gold = (yaml.safe_load((ROOT / "gold" / "gold.yaml").read_text())["items"]
+            + yaml.safe_load((ROOT / "gold" / "stress.yaml").read_text())["items"])
     d = load()
     pd_ans = answers(d)
     report, bad = [], 0
     for it in gold:
-        if it["kind"] != "answer":
+        if it["kind"] not in ("answer", "either"):
             continue
         ref = run_sql_raw(it["sql"]).rows
         exp_rows = pd_ans.get(it["id"])

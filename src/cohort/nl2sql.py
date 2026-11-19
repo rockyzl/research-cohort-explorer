@@ -30,6 +30,18 @@ from cohort.sqlguard import GuardError, validate
 CACHE = ROOT / "results" / "llm_cache.jsonl"
 PROMPT_VERSION = "v1"
 
+# Ablation prompts (evaluation only):
+#  bare       - schema only, none of the domain rules below (measures how much the hand-written
+#               rules, authored with knowledge of the gold set, contribute).
+#  permissive - schema rendered for role "approved" (so restricted columns are visible), no refusal
+#               rules, always answer; the SQL is still validated/executed as "researcher". This
+#               isolates what the guard alone catches when the generator does not self-censor.
+BARE_RULES = """Translate the question into one SQLite query over the schema below.
+Output JSON: {"sql": "<query or empty>", "refuse": true|false, "reason": "<short>"}."""
+PERMISSIVE_RULES = """Translate the question into one SQLite SELECT query over the schema below.
+Always produce a query that answers the question as directly as possible; never refuse.
+Output JSON: {"sql": "<query>", "refuse": false, "reason": "<short>"}."""
+
 SYSTEM_RULES = """You translate a researcher's question into ONE SQLite SELECT query over the schema below.
 Rules:
 - Output JSON: {"sql": "<query or empty>", "refuse": true|false, "reason": "<short>"}.
@@ -67,14 +79,18 @@ def _access_token() -> str:
 class AzureLLM:
     name = "azure-openai"
 
-    def __init__(self):
+    def __init__(self, variant: str = PROMPT_VERSION):
         from openai import AzureOpenAI
+        if variant not in (PROMPT_VERSION, "bare", "permissive"):
+            raise ValueError(variant)
+        self.variant = variant
         self.endpoint = os.environ["COHORT_AZURE_ENDPOINT"]
         self.deployment = os.environ.get("COHORT_AZURE_DEPLOYMENT", "gpt-4.1")
         self.api_version = "2024-10-21"
         self.client = AzureOpenAI(azure_endpoint=self.endpoint, azure_ad_token_provider=_access_token,
                                   api_version=self.api_version, timeout=60, max_retries=1)
-        self.label = f"Azure OpenAI deployment '{self.deployment}' (api {self.api_version}, temperature 0)"
+        self.label = (f"Azure OpenAI deployment '{self.deployment}' (api {self.api_version}, temperature 0, "
+                      f"prompt {variant})")
 
     @staticmethod
     def available() -> bool:
@@ -106,9 +122,13 @@ class AzureLLM:
         return {**resp, "cached": False}
 
     def generate(self, question: str, role: str, feedback: str | None = None, prev_sql: str | None = None) -> dict:
-        schema = load_catalog().as_prompt(role)
-        messages = [{"role": "system", "content": f"{SYSTEM_RULES}\nYour role: {role}\n\nSCHEMA\n{schema}"},
-                    {"role": "user", "content": question}]
+        if self.variant == "permissive":
+            system = f"{PERMISSIVE_RULES}\n\nSCHEMA\n{load_catalog().as_prompt('approved')}"
+        elif self.variant == "bare":
+            system = f"{BARE_RULES}\n\nSCHEMA\n{load_catalog().as_prompt(role)}"
+        else:
+            system = f"{SYSTEM_RULES}\nYour role: {role}\n\nSCHEMA\n{load_catalog().as_prompt(role)}"
+        messages = [{"role": "system", "content": system}, {"role": "user", "content": question}]
         if feedback:
             messages += [{"role": "assistant", "content": json.dumps({"sql": prev_sql, "refuse": False})},
                          {"role": "user", "content": f"The query was rejected by the validator: {feedback}\n"
@@ -186,11 +206,11 @@ class TemplateBackend:
         return {"sql": sql, "refuse": False, "reason": "template match"}
 
 
-def get_backend(prefer: str = "auto"):
+def get_backend(prefer: str = "auto", variant: str = PROMPT_VERSION):
     if prefer == "template":
         return TemplateBackend()
     if prefer in ("auto", "azure") and AzureLLM.available():
-        return AzureLLM()
+        return AzureLLM(variant)
     if prefer == "azure":
         raise RuntimeError("Azure backend requested but COHORT_AZURE_ENDPOINT/SUBSCRIPTION are not set")
     return TemplateBackend()
