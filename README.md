@@ -7,7 +7,7 @@ It runs over public, de-identified TCGA breast-cancer data and has three parts:
 - a structured cohort builder that shows counts per data modality;
 - a natural-language-to-SQL assistant whose **AI-generated SQL is validated, guarded and scored** against a gold set.
 
-This is a personal prototype. It is not a hospital system and uses no PHI. It is not affiliated with Boston Children's Hospital or any other institution. It was built with an AI coding agent; see [`docs/ai-assisted-engineering.md`](docs/ai-assisted-engineering.md).
+This is a personal prototype. It is not a hospital system and uses no PHI. It is not affiliated with any hospital or other institution. It was built with an AI coding agent; see [`docs/ai-assisted-engineering.md`](docs/ai-assisted-engineering.md).
 
 ## Question
 
@@ -191,3 +191,7 @@ tests/                    pytest suite
 docs/                     evaluation, AI-assisted engineering, build log, standards mapping, demo transcript,
                           
 ```
+
+## License and attribution
+
+Code: MIT (see `LICENSE`). Data attribution: [`THIRD_PARTY.md`](THIRD_PARTY.md).
