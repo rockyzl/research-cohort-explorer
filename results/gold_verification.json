@@ -1,0 +1,794 @@
+{
+  "n_items": 40,
+  "n_agree": 40,
+  "items": [
+    {
+      "id": "D01",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          1092
+        ]
+      ],
+      "pandas_result": [
+        [
+          1092
+        ]
+      ]
+    },
+    {
+      "id": "D02",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          12
+        ]
+      ],
+      "pandas_result": [
+        [
+          12
+        ]
+      ]
+    },
+    {
+      "id": "D03",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          805
+        ]
+      ],
+      "pandas_result": [
+        [
+          805
+        ]
+      ]
+    },
+    {
+      "id": "D04",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "Basal",
+          139
+        ],
+        [
+          "Her2",
+          67
+        ],
+        [
+          "LumA",
+          419
+        ],
+        [
+          "LumB",
+          192
+        ],
+        [
+          "Normal",
+          23
+        ]
+      ],
+      "pandas_result": [
+        [
+          "Basal",
+          139
+        ],
+        [
+          "Her2",
+          67
+        ],
+        [
+          "LumA",
+          419
+        ],
+        [
+          "LumB",
+          192
+        ],
+        [
+          "Normal",
+          23
+        ]
+      ]
+    },
+    {
+      "id": "D05",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          55.2
+        ]
+      ],
+      "pandas_result": [
+        [
+          55.2
+        ]
+      ]
+    },
+    {
+      "id": "D06",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          993
+        ]
+      ],
+      "pandas_result": [
+        [
+          993
+        ]
+      ]
+    },
+    {
+      "id": "D07",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          1127
+        ]
+      ],
+      "pandas_result": [
+        [
+          1127
+        ]
+      ]
+    },
+    {
+      "id": "D08",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          53
+        ]
+      ],
+      "pandas_result": [
+        [
+          53
+        ]
+      ]
+    },
+    {
+      "id": "D09",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          6.92
+        ]
+      ],
+      "pandas_result": [
+        [
+          6.92
+        ]
+      ]
+    },
+    {
+      "id": "D10",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "BH",
+          148
+        ],
+        [
+          "A2",
+          102
+        ],
+        [
+          "E2",
+          90
+        ],
+        [
+          "A8",
+          84
+        ],
+        [
+          "D8",
+          78
+        ]
+      ],
+      "pandas_result": [
+        [
+          "BH",
+          148
+        ],
+        [
+          "A2",
+          102
+        ],
+        [
+          "E2",
+          90
+        ],
+        [
+          "A8",
+          84
+        ],
+        [
+          "D8",
+          78
+        ]
+      ]
+    },
+    {
+      "id": "D11",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          15
+        ]
+      ],
+      "pandas_result": [
+        [
+          15
+        ]
+      ]
+    },
+    {
+      "id": "D12",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          112
+        ]
+      ],
+      "pandas_result": [
+        [
+          112
+        ]
+      ]
+    },
+    {
+      "id": "T01",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          97
+        ]
+      ],
+      "pandas_result": [
+        [
+          97
+        ]
+      ]
+    },
+    {
+      "id": "T02",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          342
+        ]
+      ],
+      "pandas_result": [
+        [
+          342
+        ]
+      ]
+    },
+    {
+      "id": "T03",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          157
+        ]
+      ],
+      "pandas_result": [
+        [
+          157
+        ]
+      ]
+    },
+    {
+      "id": "T04",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "I",
+          181
+        ],
+        [
+          "II",
+          618
+        ],
+        [
+          "III",
+          249
+        ],
+        [
+          "IV",
+          20
+        ]
+      ],
+      "pandas_result": [
+        [
+          "I",
+          181
+        ],
+        [
+          "II",
+          618
+        ],
+        [
+          "III",
+          249
+        ],
+        [
+          "IV",
+          20
+        ]
+      ]
+    },
+    {
+      "id": "T05",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          190
+        ]
+      ],
+      "pandas_result": [
+        [
+          190
+        ]
+      ]
+    },
+    {
+      "id": "T06",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "Indeterminate",
+          50.6
+        ],
+        [
+          "Peri",
+          50.1
+        ],
+        [
+          "Post",
+          64.8
+        ],
+        [
+          "Pre",
+          43.2
+        ]
+      ],
+      "pandas_result": [
+        [
+          "Indeterminate",
+          50.6
+        ],
+        [
+          "Peri",
+          50.1
+        ],
+        [
+          "Post",
+          64.8
+        ],
+        [
+          "Pre",
+          43.2
+        ]
+      ]
+    },
+    {
+      "id": "T07",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          35
+        ]
+      ],
+      "pandas_result": [
+        [
+          35
+        ]
+      ]
+    },
+    {
+      "id": "T08",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          112
+        ]
+      ],
+      "pandas_result": [
+        [
+          112
+        ]
+      ]
+    },
+    {
+      "id": "T09",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "Basal",
+          13
+        ],
+        [
+          "Her2",
+          44
+        ],
+        [
+          "LumA",
+          57
+        ],
+        [
+          "LumB",
+          41
+        ],
+        [
+          "Normal",
+          1
+        ]
+      ],
+      "pandas_result": [
+        [
+          "Basal",
+          13
+        ],
+        [
+          "Her2",
+          44
+        ],
+        [
+          "LumA",
+          57
+        ],
+        [
+          "LumB",
+          41
+        ],
+        [
+          "Normal",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "T10",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          94
+        ]
+      ],
+      "pandas_result": [
+        [
+          94
+        ]
+      ]
+    },
+    {
+      "id": "T11",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "Negative",
+          12.52
+        ],
+        [
+          "Positive",
+          14.74
+        ]
+      ],
+      "pandas_result": [
+        [
+          "Negative",
+          12.52
+        ],
+        [
+          "Positive",
+          14.74
+        ]
+      ]
+    },
+    {
+      "id": "T12",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          145
+        ]
+      ],
+      "pandas_result": [
+        [
+          145
+        ]
+      ]
+    },
+    {
+      "id": "T13",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          1115.0
+        ]
+      ],
+      "pandas_result": [
+        [
+          1115.0
+        ]
+      ]
+    },
+    {
+      "id": "T14",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          61
+        ]
+      ],
+      "pandas_result": [
+        [
+          61
+        ]
+      ]
+    },
+    {
+      "id": "T15",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          1153.8
+        ]
+      ],
+      "pandas_result": [
+        [
+          1153.8
+        ]
+      ]
+    },
+    {
+      "id": "T16",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "Infiltrating Ductal Carcinoma",
+          780
+        ]
+      ],
+      "pandas_result": [
+        [
+          "Infiltrating Ductal Carcinoma",
+          780
+        ]
+      ]
+    },
+    {
+      "id": "T17",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          335
+        ]
+      ],
+      "pandas_result": [
+        [
+          335
+        ]
+      ]
+    },
+    {
+      "id": "T18",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          2
+        ]
+      ],
+      "pandas_result": [
+        [
+          2
+        ]
+      ]
+    },
+    {
+      "id": "T19",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          540
+        ]
+      ],
+      "pandas_result": [
+        [
+          540
+        ]
+      ]
+    },
+    {
+      "id": "T20",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "WHITE",
+          752
+        ],
+        [
+          "BLACK OR AFRICAN AMERICAN",
+          183
+        ],
+        [
+          "ASIAN",
+          61
+        ],
+        [
+          "AMERICAN INDIAN OR ALASKA NATIVE",
+          1
+        ]
+      ],
+      "pandas_result": [
+        [
+          "WHITE",
+          752
+        ],
+        [
+          "BLACK OR AFRICAN AMERICAN",
+          183
+        ],
+        [
+          "ASIAN",
+          61
+        ],
+        [
+          "AMERICAN INDIAN OR ALASKA NATIVE",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "T21",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          65
+        ]
+      ],
+      "pandas_result": [
+        [
+          65
+        ]
+      ]
+    },
+    {
+      "id": "T22",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          "Basal",
+          11.99
+        ],
+        [
+          "Her2",
+          11.63
+        ],
+        [
+          "LumA",
+          10.13
+        ],
+        [
+          "LumB",
+          11.4
+        ],
+        [
+          "Normal",
+          9.92
+        ]
+      ],
+      "pandas_result": [
+        [
+          "Basal",
+          11.99
+        ],
+        [
+          "Her2",
+          11.63
+        ],
+        [
+          "LumA",
+          10.13
+        ],
+        [
+          "LumB",
+          11.4
+        ],
+        [
+          "Normal",
+          9.92
+        ]
+      ]
+    },
+    {
+      "id": "T23",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          49
+        ]
+      ],
+      "pandas_result": [
+        [
+          49
+        ]
+      ]
+    },
+    {
+      "id": "T24",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          35,
+          82
+        ]
+      ],
+      "pandas_result": [
+        [
+          35,
+          82
+        ]
+      ]
+    },
+    {
+      "id": "T25",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          7
+        ]
+      ],
+      "pandas_result": [
+        [
+          7
+        ]
+      ]
+    },
+    {
+      "id": "T26",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          59
+        ]
+      ],
+      "pandas_result": [
+        [
+          59
+        ]
+      ]
+    },
+    {
+      "id": "T27",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          95.5
+        ]
+      ],
+      "pandas_result": [
+        [
+          95.5
+        ]
+      ]
+    },
+    {
+      "id": "T28",
+      "agree": true,
+      "reference_sql_result": [
+        [
+          19
+        ]
+      ],
+      "pandas_result": [
+        [
+          19
+        ]
+      ]
+    }
+  ]
+}

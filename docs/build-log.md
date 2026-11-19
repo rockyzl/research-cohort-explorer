@@ -20,3 +20,7 @@ attempted, what went wrong, how it was caught. `docs/ai-assisted-engineering.md`
   against the catalog and stopped with `values outside catalog allowed_values: {'Stage III'}`.
   Fixed in the catalog; the check stays because the NL-to-SQL prompt shows these enums to the model,
   so a missing value would silently steer generated filters.
+- **Gold verifier bug (not a data disagreement).** The first run of `gold/verify_pandas.py` crashed:
+  `p.hist` resolved to the pandas `DataFrame.hist` plotting method rather than the `hist` column.
+  Fixed by indexing `p["hist"]`. After the fix all 40 answerable reference answers agreed with the
+  independent pandas re-implementation (`results/gold_verification.json`).
