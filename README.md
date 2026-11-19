@@ -189,7 +189,6 @@ gold/                     gold.yaml, stress.yaml, verify_pandas.py
 results/                  ingest stats, gold verification, every evaluation run, summary.json
 tests/                    pytest suite
 docs/                     evaluation, AI-assisted engineering, build log, standards mapping, demo transcript,
-                          
 ```
 
 ## License and attribution
