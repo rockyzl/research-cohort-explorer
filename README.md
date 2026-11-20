@@ -158,15 +158,15 @@ Full SQL for each case is in `results/eval_*.json`, and the write-up is in [`doc
 uv sync
 make data          # fetch/copy raw files, verify hashes, build data/cohort.sqlite (≈3 s, ≈170 MB RSS)
 make verify-gold   # pandas cross-check of all reference answers
-make test          # 191 pytest tests (guards, engine layer, privacy, catalog, harness, API)
+make test          # 196 pytest tests (guards, engine layer, privacy, catalog, harness, API)
 make eval-template # deterministic baseline, no network
-make eval-llm      # needs `az login` and a .env (see .env.example); reuses results/llm_cache.jsonl
+make eval-llm      # needs an LLM provider in .env (see .env.example); reuses results/llm_cache.jsonl
 make summary       # results/summary.json + the tables above
 make demo          # regenerates docs/demo-transcript.md
 make serve         # http://127.0.0.1:8790
 ```
 
-**LLM access.** The model is an Azure OpenAI GPT-4.1 deployment configured through environment variables. Calls use a short-lived Azure CLI token and no API key, following the pattern in `oncology-multimodal-lab/assistant/provider.py`. There are 225 cached LLM calls in total across all runs and the demo (`results/llm_cache.jsonl`, gitignored). Without credentials, the app and `make eval-template` use the template fallback.
+**LLM access.** There are two interchangeable providers with identical prompts and call parameters (`cohort/nl2sql.py`). The first is the OpenAI API with model snapshot `gpt-4.1-2025-04-14`, keyed by `OPENAI_API_KEY`. The second is an Azure OpenAI GPT-4.1 deployment configured through environment variables, which uses a short-lived Azure CLI token and no API key. Select one with `--backend`, `COHORT_LLM_PROVIDER` or `make eval-llm LLM=openai|azure`. The published results above were produced on the Azure deployment, model version `gpt-4.1-2025-04-14`. A pre-registered rerun of dev, test and stress on the OpenAI API is pending; see [`docs/reproduction-2026-11-20.md`](docs/reproduction-2026-11-20.md). The published runs made 225 LLM calls, including the demo, and they are cached locally (gitignored). Without credentials, the app and `make eval-template` use the template fallback.
 
 **Compute.** Everything runs on CPU. The SQLite DB is 6.9 MB, the build peaks at about 170 MB RSS, and the test suite runs in under 1 s.
 
