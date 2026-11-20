@@ -1,12 +1,14 @@
 """Natural-language question -> SQL, with the guard in the loop.
 
-Backends:
-  * AzureLLM  - Azure OpenAI GPT-4.1 deployment (endpoint from env), keyless auth via the local Azure CLI
-                (same pattern as oncology-multimodal-lab/assistant/provider.py). No API key is read,
-                printed or stored. Every call is cached in results/llm_cache.jsonl (gitignored) and
-                its token usage logged.
+Backends (both LLM providers send identical prompts and call parameters; only the transport differs):
+  * OpenAILLM - OpenAI API, model snapshot from COHORT_OPENAI_MODEL (default gpt-4.1-2025-04-14).
+                The SDK reads OPENAI_API_KEY from the environment; the key is never printed or stored.
+  * AzureLLM  - an Azure OpenAI GPT-4.1 deployment configured entirely through environment variables
+                (endpoint, subscription, deployment name); keyless auth via a short-lived Azure CLI token.
   * Template  - deterministic rule-based fallback; no network. Used when no credential is
                 available and as a baseline in the evaluation.
+Every LLM call is cached in results/llm_cache.jsonl (gitignored) and its token usage logged.
+Provider selection: COHORT_LLM_PROVIDER=openai|azure|template, or --backend on the CLI / "backend" in the API.
 
 Pipeline: generate -> guard.validate; if the guard rejects the SQL, the LLM gets ONE repair attempt
 with the guard's error message; the second rejection is final. The response always carries the
@@ -76,28 +78,21 @@ def _access_token() -> str:
         return _token["value"]
 
 
-class AzureLLM:
-    name = "azure-openai"
+class _ChatLLM:
+    """Shared prompt construction, caching and parsing. Subclasses only set up the client.
+
+    Subclasses define: name, client, cache_model (model id used in the cache key), call_model
+    (model/deployment passed to the API) and label.
+    """
+    name = "llm"
 
     def __init__(self, variant: str = PROMPT_VERSION):
-        from openai import AzureOpenAI
         if variant not in (PROMPT_VERSION, "bare", "permissive"):
             raise ValueError(variant)
         self.variant = variant
-        self.endpoint = os.environ["COHORT_AZURE_ENDPOINT"]
-        self.deployment = os.environ.get("COHORT_AZURE_DEPLOYMENT", "gpt-4.1")
-        self.api_version = "2024-10-21"
-        self.client = AzureOpenAI(azure_endpoint=self.endpoint, azure_ad_token_provider=_access_token,
-                                  api_version=self.api_version, timeout=60, max_retries=1)
-        self.label = (f"Azure OpenAI deployment '{self.deployment}' (api {self.api_version}, temperature 0, "
-                      f"prompt {variant})")
-
-    @staticmethod
-    def available() -> bool:
-        return bool(os.environ.get("COHORT_AZURE_ENDPOINT") and os.environ.get("COHORT_AZURE_SUBSCRIPTION"))
 
     def complete(self, messages: list[dict]) -> dict:
-        key = hashlib.sha256(json.dumps([self.deployment, messages], sort_keys=True).encode()).hexdigest()
+        key = hashlib.sha256(json.dumps([self.cache_model, messages], sort_keys=True).encode()).hexdigest()
         if CACHE.exists():
             with CACHE.open() as f:
                 for line in f:
@@ -105,23 +100,29 @@ class AzureLLM:
                     if rec["key"] == key:
                         return {**rec["response"], "cached": True}
         t0 = time.monotonic()
-        r = self.client.chat.completions.create(model=self.deployment, messages=messages, temperature=0,
+        r = self.client.chat.completions.create(model=self.call_model, messages=messages, temperature=0,
                                                 max_tokens=700, response_format={"type": "json_object"})
         content = r.choices[0].message.content or "{}"
         try:
             parsed = json.loads(content)
         except json.JSONDecodeError:
             parsed = {"sql": "", "refuse": False, "reason": "unparseable model output", "raw": content}
-        resp = {"parsed": parsed, "usage": {"input_tokens": r.usage.prompt_tokens,
-                                            "output_tokens": r.usage.completion_tokens},
+        usage = {"input_tokens": r.usage.prompt_tokens, "output_tokens": r.usage.completion_tokens}
+        details = getattr(r.usage, "prompt_tokens_details", None)
+        if self.name == "openai" and details is not None:
+            usage["cached_input_tokens"] = getattr(details, "cached_tokens", 0) or 0
+        resp = {"parsed": parsed, "usage": usage,
                 "seconds": round(time.monotonic() - t0, 2), "model": r.model,
                 "finish_reason": r.choices[0].finish_reason}
+        if self.name == "openai":
+            resp["system_fingerprint"] = getattr(r, "system_fingerprint", None)
         CACHE.parent.mkdir(exist_ok=True)
         with CACHE.open("a") as f:
             f.write(json.dumps({"key": key, "messages": messages, "response": resp}) + "\n")
         return {**resp, "cached": False}
 
-    def generate(self, question: str, role: str, feedback: str | None = None, prev_sql: str | None = None) -> dict:
+    def build_messages(self, question: str, role: str, feedback: str | None = None,
+                       prev_sql: str | None = None) -> list[dict]:
         if self.variant == "permissive":
             system = f"{PERMISSIVE_RULES}\n\nSCHEMA\n{load_catalog().as_prompt('approved')}"
         elif self.variant == "bare":
@@ -134,10 +135,62 @@ class AzureLLM:
                          {"role": "user", "content": f"The query was rejected by the validator: {feedback}\n"
                                                      "Return a corrected JSON answer, or refuse if the question "
                                                      "cannot be answered with the allowed schema."}]
-        resp = self.complete(messages)
+        return messages
+
+    def generate(self, question: str, role: str, feedback: str | None = None, prev_sql: str | None = None) -> dict:
+        resp = self.complete(self.build_messages(question, role, feedback, prev_sql))
         p = resp["parsed"]
         return {"sql": (p.get("sql") or "").strip(), "refuse": bool(p.get("refuse")), "reason": p.get("reason", ""),
                 "usage": resp["usage"], "cached": resp["cached"], "model": resp["model"]}
+
+
+class AzureLLM(_ChatLLM):
+    """Azure OpenAI deployment; endpoint, subscription and deployment name come from the environment."""
+    name = "azure-openai"
+
+    def __init__(self, variant: str = PROMPT_VERSION):
+        from openai import AzureOpenAI
+        super().__init__(variant)
+        self.endpoint = os.environ["COHORT_AZURE_ENDPOINT"]
+        self.deployment = os.environ.get("COHORT_AZURE_DEPLOYMENT", "gpt-4.1")
+        self.cache_model = self.call_model = self.deployment   # cache key unchanged from the original runs
+        self.api_version = "2024-10-21"
+        self.client = AzureOpenAI(azure_endpoint=self.endpoint, azure_ad_token_provider=_access_token,
+                                  api_version=self.api_version, timeout=60, max_retries=1)
+        self.label = (f"Azure OpenAI deployment '{self.deployment}' (api {self.api_version}, temperature 0, "
+                      f"prompt {variant})")
+
+    @staticmethod
+    def available() -> bool:
+        return bool(os.environ.get("COHORT_AZURE_ENDPOINT") and os.environ.get("COHORT_AZURE_SUBSCRIPTION"))
+
+
+# ------------------------------------------------------------------------------------------------
+# OpenAI API backend
+# ------------------------------------------------------------------------------------------------
+OPENAI_DEFAULT_MODEL = "gpt-4.1-2025-04-14"
+
+
+class OpenAILLM(_ChatLLM):
+    """OpenAI API with a pinned model snapshot. The SDK reads OPENAI_API_KEY (and, if set,
+    OPENAI_BASE_URL / OPENAI_ORG_ID / OPENAI_PROJECT_ID) from the environment; nothing is hard-coded."""
+    name = "openai"
+
+    def __init__(self, variant: str = PROMPT_VERSION):
+        from openai import OpenAI
+        super().__init__(variant)
+        self.model = os.environ.get("COHORT_OPENAI_MODEL", OPENAI_DEFAULT_MODEL)
+        self.cache_model = self.call_model = self.model
+        self.client = OpenAI(timeout=60, max_retries=1)
+        self.label = f"OpenAI API model '{self.model}' (temperature 0, prompt {variant})"
+
+    @staticmethod
+    def available() -> bool:
+        return bool(os.environ.get("OPENAI_API_KEY"))
+
+
+def llm_available() -> bool:
+    return OpenAILLM.available() or AzureLLM.available()
 
 
 # ------------------------------------------------------------------------------------------------
@@ -207,12 +260,26 @@ class TemplateBackend:
 
 
 def get_backend(prefer: str = "auto", variant: str = PROMPT_VERSION):
+    """prefer: auto | openai | azure | template. "auto" honours COHORT_LLM_PROVIDER, otherwise uses
+    the OpenAI API if OPENAI_API_KEY is set, then Azure if configured, then the template fallback."""
+    if prefer == "auto":
+        prefer = os.environ.get("COHORT_LLM_PROVIDER", "auto").strip().lower() or "auto"
     if prefer == "template":
         return TemplateBackend()
-    if prefer in ("auto", "azure") and AzureLLM.available():
-        return AzureLLM(variant)
+    if prefer == "openai":
+        if not OpenAILLM.available():
+            raise RuntimeError("OpenAI backend requested but OPENAI_API_KEY is not set")
+        return OpenAILLM(variant)
     if prefer == "azure":
-        raise RuntimeError("Azure backend requested but COHORT_AZURE_ENDPOINT/SUBSCRIPTION are not set")
+        if not AzureLLM.available():
+            raise RuntimeError("Azure backend requested but COHORT_AZURE_ENDPOINT/SUBSCRIPTION are not set")
+        return AzureLLM(variant)
+    if prefer != "auto":
+        raise RuntimeError(f"unknown backend {prefer!r}")
+    if OpenAILLM.available():
+        return OpenAILLM(variant)
+    if AzureLLM.available():
+        return AzureLLM(variant)
     return TemplateBackend()
 
 

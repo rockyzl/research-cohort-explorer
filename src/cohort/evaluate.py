@@ -1,6 +1,6 @@
 """Gold-set evaluation harness: execution accuracy + refusal accuracy + failure taxonomy.
 
-Run: python -m cohort.evaluate --backend azure --split dev [--tag run1]
+Run: python -m cohort.evaluate --backend openai|azure|template --split dev [--tag run1]
 
 Execution accuracy compares the RAW result (before small-cell suppression) of the final SQL
 with the RAW result of the reference SQL: order-insensitive unless the item is `ordered`,
@@ -161,7 +161,7 @@ def evaluate(backend_name: str, split: str, tag: str = "run1", role: str = "rese
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--backend", default="auto", choices=["auto", "azure", "template"])
+    ap.add_argument("--backend", default="auto", choices=["auto", "openai", "azure", "template"])
     ap.add_argument("--split", default="dev", choices=["dev", "test", "all", "stress", "everything"])
     ap.add_argument("--tag", default="run1")
     ap.add_argument("--variant", default=PROMPT_VERSION, choices=[PROMPT_VERSION, "bare", "permissive"])

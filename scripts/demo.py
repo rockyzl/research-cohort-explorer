@@ -1,6 +1,6 @@
 """Drive the running app in-process (FastAPI TestClient) and record docs/demo-transcript.md.
 
-Uses the Azure LLM backend if COHORT_AZURE_* is set, otherwise the template fallback; the
+Uses the configured LLM backend (see cohort.nl2sql.get_backend), otherwise the template fallback; the
 transcript states which. Re-running regenerates the file.
 """
 import json

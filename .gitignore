@@ -5,6 +5,6 @@ __pycache__/
 data/raw/
 data/*.sqlite
 data/*.sqlite-*
-results/llm_cache.jsonl
+results/llm_cache*.jsonl
 .env
 data/audit.jsonl

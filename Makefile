@@ -1,6 +1,8 @@
 # All targets run on CPU in a few seconds except `eval-llm` (network, ~2 min).
 PY := .venv/bin/python
 ENV := set -a; [ -f .env ] && . ./.env; set +a;
+# LLM provider for eval-llm: openai (OPENAI_API_KEY) or azure (COHORT_AZURE_* + az login)
+LLM ?= openai
 
 .PHONY: setup data verify-gold test eval-template eval-llm eval-cached summary demo serve all
 
@@ -20,12 +22,12 @@ test:
 eval-template:   ## deterministic fallback baseline (no network)
 	$(PY) -m cohort.evaluate --backend template --split all --tag baseline
 
-eval-llm:        ## Azure OpenAI runs (needs `az login` + .env); cached calls are reused
-	$(ENV) $(PY) -m cohort.evaluate --backend azure --split dev --tag prompt_v1
-	$(ENV) $(PY) -m cohort.evaluate --backend azure --split test --tag frozen_v1
-	$(ENV) $(PY) -m cohort.evaluate --backend azure --split stress --tag frozen_v1
-	$(ENV) $(PY) -m cohort.evaluate --backend azure --split everything --variant bare --tag ablation
-	$(ENV) $(PY) -m cohort.evaluate --backend azure --split everything --variant permissive --tag ablation
+eval-llm:        ## LLM runs with provider $(LLM); cached calls are reused
+	$(ENV) $(PY) -m cohort.evaluate --backend $(LLM) --split dev --tag prompt_v1
+	$(ENV) $(PY) -m cohort.evaluate --backend $(LLM) --split test --tag frozen_v1
+	$(ENV) $(PY) -m cohort.evaluate --backend $(LLM) --split stress --tag frozen_v1
+	$(ENV) $(PY) -m cohort.evaluate --backend $(LLM) --split everything --variant bare --tag ablation
+	$(ENV) $(PY) -m cohort.evaluate --backend $(LLM) --split everything --variant permissive --tag ablation
 
 summary:
 	$(PY) scripts/summarize.py

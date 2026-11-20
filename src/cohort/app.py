@@ -95,7 +95,7 @@ def options():
     cat = load_catalog()
     return {"filters": {k: list(cat.columns[t][c].allowed_values) for k, (t, c) in FILTER_FIELDS.items()},
             "require": REQUIRE_FLAGS, "roles": list(ROLES),
-            "llm_available": nl2sql.AzureLLM.available()}
+            "llm_available": nl2sql.llm_available()}
 
 
 @app.post("/api/cohort")
