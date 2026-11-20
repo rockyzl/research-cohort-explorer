@@ -51,4 +51,18 @@ These results are in `results/eval_azure-openai_*.json`. This addendum records a
 
 ## Results
 
-*(Filled in after the run.)*
+**Status: pending, no rerun results yet.** The run was attempted on 2026-11-20 at commit `6b3cd2b`. The first API call, dev item 1, was refused with HTTP 429 `insufficient_quota`, because the account had no API credit.
+
+- No completion was returned and no tokens were billed.
+- No `eval_openai_*` result file or cache entry was written.
+- The published numbers above remain the only LLM results in this repository. They come from the Azure deployment.
+
+To run the rerun once credit is available:
+
+```bash
+# Make sure results/llm_cache.jsonl does not exist (the published cache is kept as
+# results/llm_cache.published-azure-2026-11-19.jsonl, gitignored).
+.venv/bin/python -m cohort.evaluate --backend openai --split dev    --tag prompt_v1
+.venv/bin/python -m cohort.evaluate --backend openai --split test   --tag frozen_v1
+.venv/bin/python -m cohort.evaluate --backend openai --split stress --tag frozen_v1
+```
