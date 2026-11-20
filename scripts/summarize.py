@@ -17,6 +17,10 @@ RUNS = {
     "llm_bare_everything": "eval_azure-openai_bare_everything_ablation.json",
     "llm_permissive_everything": "eval_azure-openai_permissive_everything_ablation.json",
     "template_all": "eval_template_all_baseline.json",
+    # OpenAI API rerun of the frozen evaluation (docs/reproduction-2026-11-20.md); skipped if not yet run
+    "openai_v1_dev": "eval_openai_dev_prompt_v1.json",
+    "openai_v1_test": "eval_openai_test_frozen_v1.json",
+    "openai_v1_stress": "eval_openai_stress_frozen_v1.json",
 }
 
 
