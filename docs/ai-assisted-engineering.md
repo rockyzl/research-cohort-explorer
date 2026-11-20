@@ -9,7 +9,7 @@ This project was built to show how AI-generated code, queries and results can be
 | Problem framing and constraints: target use case, data reuse, guardrail list, gold-set size, honesty rules ("do not fabricate LLM results", "every number from saved results") | Lu, through a written brief to his multi-agent setup |
 | Implementation: fetch, catalog, ingest, guard, privacy policy, NL-to-SQL, harness, app, tests, docs | AI coding agent (Claude, run as a sub-agent in Claude Code) |
 | Independent review during the build | A separate, stronger reviewer model consulted at checkpoints. It found the suppression leak and the authoring-bias problem (below) |
-| NL-to-SQL model under test | Azure OpenAI GPT-4.1 (Lu's personal deployment), temperature 0 |
+| NL-to-SQL model under test | Azure OpenAI GPT-4.1 deployment, temperature 0 |
 | Human verification | **Pending.** Checklist at the end. Until it is done, Lu should describe this work as "directed and validated an AI-built prototype", not "hand-wrote" |
 
 Scale:

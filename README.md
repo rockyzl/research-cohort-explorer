@@ -166,7 +166,7 @@ make demo          # regenerates docs/demo-transcript.md
 make serve         # http://127.0.0.1:8790
 ```
 
-**LLM access.** The model is a personal Azure OpenAI deployment. Calls use a short-lived Azure CLI token and no API key, following the pattern in `oncology-multimodal-lab/assistant/provider.py`. There are 225 cached LLM calls in total across all runs and the demo (`results/llm_cache.jsonl`, gitignored). Without credentials, the app and `make eval-template` use the template fallback.
+**LLM access.** The model is an Azure OpenAI GPT-4.1 deployment configured through environment variables. Calls use a short-lived Azure CLI token and no API key, following the pattern in `oncology-multimodal-lab/assistant/provider.py`. There are 225 cached LLM calls in total across all runs and the demo (`results/llm_cache.jsonl`, gitignored). Without credentials, the app and `make eval-template` use the template fallback.
 
 **Compute.** Everything runs on CPU. The SQLite DB is 6.9 MB, the build peaks at about 170 MB RSS, and the test suite runs in under 1 s.
 

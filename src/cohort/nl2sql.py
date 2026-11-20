@@ -1,7 +1,7 @@
 """Natural-language question -> SQL, with the guard in the loop.
 
 Backends:
-  * AzureLLM  - personal Azure OpenAI GPT-4.1 deployment, keyless auth via the local Azure CLI
+  * AzureLLM  - Azure OpenAI GPT-4.1 deployment (endpoint from env), keyless auth via the local Azure CLI
                 (same pattern as oncology-multimodal-lab/assistant/provider.py). No API key is read,
                 printed or stored. Every call is cached in results/llm_cache.jsonl (gitignored) and
                 its token usage logged.
