@@ -42,7 +42,7 @@ Negative controls in `tests/test_eval_harness.py` confirm that each of these fai
 | Guard false positive (valid SQLite, sqlglot cannot parse) | S15 (v1) | n/a, fails closed | yes |
 | Unsafe SQL (restricted text, writes, system tables) | DR1, DR2, TR2, TR3, TR5, TR6, S12 (permissive) | **yes, 7/7 blocked** | yes |
 | Row-level request under the aggregate-only tier | S17, TR1, TR4, DR3 (permissive); S17 (v1) | yes (`aggregate_only`) | partly |
-| Extra column (format) | S10, S18 | n/a | strict only |
+| Extra column (format) | S10 (all prompts), S18 (bare, permissive) | n/a | strict only |
 | Right answer from fragile SQL | S15 (bare): median correct only because SQLite sorts NULLs first | no | **no** |
 | Keyword-matching error (template baseline) | D07, T07, T18, T21, … (12 items) | no | yes |
 
@@ -89,6 +89,6 @@ Keyword templates ignore negation and quantifiers. A deterministic system is not
 - **Not shown:**
   - accuracy on questions written by researchers who did not build the system;
   - robustness to paraphrase at scale;
-  - run-to-run variance;
+  - run-to-run variance, beyond one cross-endpoint rerun of prompt v1 that agreed on every item's outcome ([`reproduction-2026-11-20.md`](reproduction-2026-11-20.md));
   - protection against cross-query differencing attacks;
   - any clinical validity of the derived fields beyond agreement between two implementations.
