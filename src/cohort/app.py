@@ -122,7 +122,12 @@ def ask(req: AskReq):
         backend = nl2sql.get_backend(req.backend)
     except RuntimeError as e:
         raise HTTPException(400, str(e)) from None
-    out = nl2sql.ask(req.question, role, backend)
+    try:
+        out = nl2sql.ask(req.question, role, backend)
+    except nl2sql.LLMBackendError as e:
+        _audit("ask", role, {"question": req.question, "sql": None, "backend": backend.label}, False,
+               f"llm_backend_error: {e}")
+        raise HTTPException(502, f"{e}. Retry later, or ask with backend 'template'.") from None
     _audit("ask", role, {"question": req.question, "sql": out.get("sql"), "backend": out["backend"]},
            out["outcome"] == "valid", out["outcome"])
     return out

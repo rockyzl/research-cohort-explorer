@@ -66,3 +66,18 @@ def test_backend_selection(monkeypatch):
     monkeypatch.setenv("COHORT_LLM_PROVIDER", "template")
     assert nl2sql.get_backend("auto").name == "template"
     assert nl2sql.get_backend("openai").name == "openai"
+
+
+def test_provider_exceptions_are_wrapped(monkeypatch, tmp_path):
+    import httpx
+    import openai
+
+    o, comp = _fake(nl2sql.OpenAILLM, monkeypatch, tmp_path)
+
+    def boom(**kw):
+        raise openai.APIConnectionError(request=httpx.Request("POST", "https://llm.invalid/v1/chat/completions"))
+
+    comp.create = boom
+    with pytest.raises(nl2sql.LLMBackendError, match="APIConnectionError"):
+        o.generate("How many patients?", "researcher")
+    assert not (tmp_path / "cache.jsonl").exists()   # failures are never cached

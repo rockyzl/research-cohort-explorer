@@ -49,3 +49,29 @@ def test_ask_template_backend():
 
 def test_bad_role():
     assert client.post("/api/sql", json={"sql": "SELECT COUNT(*) FROM patients", "role": "admin"}).status_code == 400
+
+
+def test_ask_llm_backend_failure_returns_clean_502(monkeypatch, tmp_path):
+    """A provider failure (here: HTTP 429 insufficient quota) must not surface as an unhandled 500."""
+    from types import SimpleNamespace
+
+    import httpx
+    import openai
+
+    from cohort import nl2sql
+
+    class Failing:
+        def create(self, **kw):
+            resp = httpx.Response(429, request=httpx.Request("POST", "https://llm.invalid/v1/chat/completions"))
+            raise openai.RateLimitError("no credit", response=resp, body=None)
+
+    b = object.__new__(nl2sql.OpenAILLM)
+    nl2sql._ChatLLM.__init__(b)
+    b.cache_model = b.call_model = "m"
+    b.label = "failing test backend"
+    b.client = SimpleNamespace(chat=SimpleNamespace(completions=Failing()))
+    monkeypatch.setattr(nl2sql, "CACHE", tmp_path / "cache.jsonl")
+    monkeypatch.setattr(nl2sql, "get_backend", lambda prefer="auto", variant=nl2sql.PROMPT_VERSION: b)
+    r = client.post("/api/ask", json={"question": "How many patients?"})
+    assert r.status_code == 502
+    assert "RateLimitError" in r.json()["detail"] and "429" in r.json()["detail"]

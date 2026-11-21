@@ -9,13 +9,13 @@ This project was built to show how AI-generated code, queries and results can be
 | Problem framing and constraints: target use case, data reuse, guardrail list, gold-set size, honesty rules ("do not fabricate LLM results", "every number from saved results") | Lu, through a written brief to his multi-agent setup |
 | Implementation: fetch, catalog, ingest, guard, privacy policy, NL-to-SQL, harness, app, tests, docs | AI coding agent (Claude, run as a sub-agent in Claude Code) |
 | Independent review during the build | A separate, stronger reviewer model consulted at checkpoints. It found the suppression leak and the authoring-bias problem (below) |
-| NL-to-SQL model under test | GPT-4.1 (`gpt-4.1-2025-04-14`), temperature 0; published runs on an Azure OpenAI deployment, OpenAI API rerun pending (`docs/reproduction-2026-11-20.md`) |
+| NL-to-SQL model under test | GPT-4.1 (`gpt-4.1-2025-04-14`), temperature 0; published runs on an Azure OpenAI deployment; dev, test and stress reproduced on the OpenAI API (`docs/reproduction-2026-11-20.md`) |
 | Human verification | **Pending.** Checklist at the end. Until it is done, Lu should describe this work as "directed and validated an AI-built prototype", not "hand-wrote" |
 
 Scale:
 - About 2,000 lines of Python across `src/`, `gold/` and `scripts/`, plus about 430 lines of tests and a 140-line HTML UI.
 - A 7-table schema with a 51-column catalog.
-- 196 tests (191, plus 5 offline LLM-provider tests added for the 2026-11-20 reproduction).
+- 198 tests (191, plus 7 added for the 2026-11-20 reproduction: offline LLM-provider tests and the `/api/ask` provider-failure test).
 - 67 evaluation items.
 - 225 LLM calls in total (a few US dollars at most on pay-as-you-go).
 

@@ -78,6 +78,17 @@ def _access_token() -> str:
         return _token["value"]
 
 
+class LLMBackendError(RuntimeError):
+    """The LLM provider call failed (network, auth, quota, rate limit, token acquisition).
+    Raised instead of the provider SDK's own exception so callers can handle every provider alike."""
+
+    def __init__(self, backend: str, exc: BaseException):
+        self.backend, self.kind = backend, type(exc).__name__
+        self.status_code = getattr(exc, "status_code", None)
+        status = f", HTTP {self.status_code}" if self.status_code else ""
+        super().__init__(f"LLM backend '{backend}' failed ({self.kind}{status})")
+
+
 class _ChatLLM:
     """Shared prompt construction, caching and parsing. Subclasses only set up the client.
 
@@ -99,9 +110,13 @@ class _ChatLLM:
                     rec = json.loads(line)
                     if rec["key"] == key:
                         return {**rec["response"], "cached": True}
+        import openai
         t0 = time.monotonic()
-        r = self.client.chat.completions.create(model=self.call_model, messages=messages, temperature=0,
-                                                max_tokens=700, response_format={"type": "json_object"})
+        try:
+            r = self.client.chat.completions.create(model=self.call_model, messages=messages, temperature=0,
+                                                    max_tokens=700, response_format={"type": "json_object"})
+        except (openai.APIError, subprocess.SubprocessError) as e:   # Azure token acquisition runs `az`
+            raise LLMBackendError(self.name, e) from e
         content = r.choices[0].message.content or "{}"
         try:
             parsed = json.loads(content)

@@ -133,6 +133,7 @@ $('#run-cohort').onclick = async () => {
 $('#run-ask').onclick = async () => {
   $('#ask-out').innerHTML = '<p>Working...</p>';
   const r = await api('/api/ask', {question: $('#question').value, role: role(), backend: $('#backend').value});
+  if (r.detail) { $('#ask-out').innerHTML = `<p class="err">${esc(typeof r.detail === 'string' ? r.detail : JSON.stringify(r.detail))}</p>`; return; }
   const attempts = r.attempts.map((a, i) => `<li>attempt ${i+1}: ${a.refuse ? 'model refused: ' + esc(a.reason) : `<pre>${esc(a.sql)}</pre>`}${a.guard_error ? `<span class="err">guard: ${esc(a.guard_error)}</span>` : ''}</li>`).join('');
   $('#ask-out').innerHTML = `<div class="card"><p><b>Outcome:</b> ${esc(r.outcome)} &middot; <small>${esc(r.backend)}</small></p><ol>${attempts}</ol>${r.result ? resultTable(r.result) : ''}</div>`;
 };
