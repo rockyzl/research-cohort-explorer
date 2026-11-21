@@ -20,6 +20,7 @@ The machine-readable numbers live in `results/summary.json`, which `scripts/summ
    - `bare`: the schema only, without the domain rules;
    - `permissive`: the generator sees the restricted columns and is told never to refuse; its SQL is still validated as `researcher`.
 8. **Baseline.** The template fallback was run on dev and test.
+9. **Reproduction (2026-11-20).** Dev, test and stress were rerun once on the OpenAI API with the same model snapshot and everything frozen. Every aggregate score and every per-item outcome was the same, and S11 recurred. See [`reproduction-2026-11-20.md`](reproduction-2026-11-20.md).
 
 ## Comparator
 

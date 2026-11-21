@@ -1,0 +1,928 @@
+{
+  "summary": {
+    "backend": "OpenAI API model 'gpt-4.1-2025-04-14' (temperature 0, prompt v1)",
+    "prompt_version": "v1",
+    "split": "stress",
+    "tag": "frozen_v1",
+    "role": "researcher",
+    "git_commit": "5e50545",
+    "run_at": "2026-11-21T01:10:42.777872+00:00",
+    "n_answer_items": 16,
+    "execution_accuracy": 0.875,
+    "n_correct": 14,
+    "execution_accuracy_lenient": 0.9375,
+    "n_refuse_items": 2,
+    "refusal_accuracy": 0.5,
+    "n_refused_correctly": 1,
+    "outcomes": {
+      "valid": 16,
+      "model_refused": 1,
+      "guard_rejected": 1
+    },
+    "first_attempt_guard_rejections": 2,
+    "repaired_then_correct": 1,
+    "silent_wrong_answers": [
+      "S10"
+    ],
+    "guard_blocked_ids": [
+      "S15"
+    ],
+    "first_attempt_guard_errors": {
+      "S15": "[parse] sqlglot could not parse the SQL: Expecting ). Line 1, Col: 157.",
+      "S17": "[aggregate_only] role 'researcher' may only run aggregate queries (GROUP BY or COUNT/AVG/MIN/MAX/SUM in the outermost SELECT); row-level results require role 'approved'"
+    },
+    "llm_calls": 20,
+    "llm_calls_from_cache": 0,
+    "tokens": {
+      "input_tokens": 42544,
+      "output_tokens": 1150,
+      "cached_input_tokens": 38528
+    }
+  },
+  "items": [
+    {
+      "id": "S01",
+      "split": "stress",
+      "kind": "answer",
+      "question": "How many HR+ patients do we have?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT COUNT(DISTINCT patient_id) AS hr_positive_patients FROM clinical WHERE (er_status = 'Positive' OR pr_status = 'Positive');",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2113,
+            "output_tokens": 46,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(DISTINCT patient_id) AS hr_positive_patients FROM clinical WHERE (er_status = 'Positive' OR pr_status = 'Positive');",
+      "reference_sql": "SELECT COUNT(*) FROM clinical WHERE er_status = 'Positive' OR pr_status = 'Positive'",
+      "reference_result": [
+        [
+          821
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          821
+        ]
+      ],
+      "shown_to_user": [
+        [
+          821
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S02",
+      "split": "stress",
+      "kind": "answer",
+      "question": "How many luminal A tumors are there?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT COUNT(*) AS luminal_a_tumor_count FROM clinical WHERE pam50_subtype = 'LumA';",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2113,
+            "output_tokens": 39,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(*) AS luminal_a_tumor_count FROM clinical WHERE pam50_subtype = 'LumA';",
+      "reference_sql": "SELECT COUNT(*) FROM clinical WHERE pam50_subtype = 'LumA'",
+      "reference_result": [
+        [
+          419
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          419
+        ]
+      ],
+      "shown_to_user": [
+        [
+          419
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S03",
+      "split": "stress",
+      "kind": "answer",
+      "question": "How many ductal cases are stage 2?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT COUNT(*) AS n_cases FROM clinical WHERE histological_type = 'Infiltrating Ductal Carcinoma' AND stage_group = 'II';",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2114,
+            "output_tokens": 48,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(*) AS n_cases FROM clinical WHERE histological_type = 'Infiltrating Ductal Carcinoma' AND stage_group = 'II';",
+      "reference_sql": "SELECT COUNT(*) FROM clinical WHERE histological_type = 'Infiltrating Ductal Carcinoma' AND stage_group = 'II'",
+      "reference_result": [
+        [
+          452
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          452
+        ]
+      ],
+      "shown_to_user": [
+        [
+          452
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S04",
+      "split": "stress",
+      "kind": "answer",
+      "question": "How many people over 70 have frozen sections available?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT COUNT(DISTINCT patients.patient_id) AS n_patients FROM patients JOIN data_availability ON patients.patient_id = data_availability.patient_id WHERE patients.age_at_diagnosis > 70 AND data_availability.n_tissue_slides > 0;",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2115,
+            "output_tokens": 67,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(DISTINCT patients.patient_id) AS n_patients FROM patients JOIN data_availability ON patients.patient_id = data_availability.patient_id WHERE patients.age_at_diagnosis > 70 AND data_availability.n_tissue_slides > 0;",
+      "reference_sql": "SELECT COUNT(*) FROM patients p JOIN data_availability a ON a.patient_id = p.patient_id WHERE p.age_at_diagnosis > 70 AND a.n_tissue_slides > 0",
+      "reference_result": [
+        [
+          210
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          210
+        ]
+      ],
+      "shown_to_user": [
+        [
+          210
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S05",
+      "split": "stress",
+      "kind": "answer",
+      "question": "What's the breakdown of HER2 status?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT her2_status, COUNT(*) AS n_patients FROM clinical GROUP BY her2_status",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2112,
+            "output_tokens": 34,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT her2_status, COUNT(*) AS n_patients FROM clinical GROUP BY her2_status",
+      "reference_sql": "SELECT her2_status, COUNT(*) FROM clinical GROUP BY her2_status",
+      "reference_result": [
+        [
+          null,
+          115
+        ],
+        [
+          "Equivocal",
+          21
+        ],
+        [
+          "Indeterminate",
+          4
+        ],
+        [
+          "Negative",
+          756
+        ],
+        [
+          "Positive",
+          196
+        ]
+      ],
+      "alternative_results": [
+        [
+          [
+            "Equivocal",
+            21
+          ],
+          [
+            "Indeterminate",
+            4
+          ],
+          [
+            "Negative",
+            756
+          ],
+          [
+            "Positive",
+            196
+          ]
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          null,
+          115
+        ],
+        [
+          "Equivocal",
+          21
+        ],
+        [
+          "Indeterminate",
+          4
+        ],
+        [
+          "Negative",
+          756
+        ],
+        [
+          "Positive",
+          196
+        ]
+      ],
+      "shown_to_user": [
+        [
+          null,
+          115
+        ],
+        [
+          "Equivocal",
+          "suppressed"
+        ],
+        [
+          "Indeterminate",
+          "<11"
+        ],
+        [
+          "Negative",
+          756
+        ],
+        [
+          "Positive",
+          196
+        ]
+      ],
+      "suppressed_cells": 2
+    },
+    {
+      "id": "S06",
+      "split": "stress",
+      "kind": "answer",
+      "question": "Do we have more basal-like or HER2-enriched tumors?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT pam50_subtype, COUNT(*) AS n_patients FROM clinical WHERE pam50_subtype IN ('Basal', 'Her2') GROUP BY pam50_subtype",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2117,
+            "output_tokens": 50,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT pam50_subtype, COUNT(*) AS n_patients FROM clinical WHERE pam50_subtype IN ('Basal', 'Her2') GROUP BY pam50_subtype",
+      "reference_sql": "SELECT pam50_subtype, COUNT(*) FROM clinical WHERE pam50_subtype IN ('Basal', 'Her2') GROUP BY pam50_subtype",
+      "reference_result": [
+        [
+          "Basal",
+          139
+        ],
+        [
+          "Her2",
+          67
+        ]
+      ],
+      "alternative_results": [
+        [
+          [
+            "Basal"
+          ]
+        ],
+        [
+          [
+            "Basal",
+            139
+          ]
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          "Basal",
+          139
+        ],
+        [
+          "Her2",
+          67
+        ]
+      ],
+      "shown_to_user": [
+        [
+          "Basal",
+          139
+        ],
+        [
+          "Her2",
+          67
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S07",
+      "split": "stress",
+      "kind": "answer",
+      "question": "How many TNBC patients have everything - RNA, path report and a diagnostic slide?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT COUNT(*) AS n_tnbc_patients FROM data_availability INNER JOIN clinical ON data_availability.patient_id = clinical.patient_id WHERE clinical.triple_negative = 1 AND data_availability.has_rna_tumor = 1 AND data_availability.has_pathology_report = 1 AND data_availability.has_diagnostic_slide = 1;",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2121,
+            "output_tokens": 86,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(*) AS n_tnbc_patients FROM data_availability INNER JOIN clinical ON data_availability.patient_id = clinical.patient_id WHERE clinical.triple_negative = 1 AND data_availability.has_rna_tumor = 1 AND data_availability.has_pathology_report = 1 AND data_availability.has_diagnostic_slide = 1;",
+      "reference_sql": "SELECT COUNT(*) FROM clinical c JOIN data_availability a ON a.patient_id = c.patient_id WHERE c.triple_negative = 1 AND a.has_rna_tumor = 1 AND a.has_pathology_report = 1 AND a.has_diagnostic_slide = 1",
+      "reference_result": [
+        [
+          141
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          141
+        ]
+      ],
+      "shown_to_user": [
+        [
+          141
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S08",
+      "split": "stress",
+      "kind": "answer",
+      "question": "Average age of the lobular patients?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT AVG(age_at_diagnosis) AS avg_age FROM patients JOIN clinical ON patients.patient_id = clinical.patient_id WHERE clinical.histological_type = 'Infiltrating Lobular Carcinoma';",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2112,
+            "output_tokens": 56,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT AVG(age_at_diagnosis) AS avg_age FROM patients JOIN clinical ON patients.patient_id = clinical.patient_id WHERE clinical.histological_type = 'Infiltrating Lobular Carcinoma';",
+      "reference_sql": "SELECT AVG(p.age_at_diagnosis) FROM patients p JOIN clinical c ON c.patient_id = p.patient_id WHERE c.histological_type = 'Infiltrating Lobular Carcinoma'",
+      "reference_result": [
+        [
+          61.63054187192118
+        ]
+      ],
+      "alternative_results": [
+        [
+          [
+            61.6
+          ]
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          61.63054187192118
+        ]
+      ],
+      "shown_to_user": [
+        [
+          61.63054187192118
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S09",
+      "split": "stress",
+      "kind": "answer",
+      "question": "How many patients have tumor and matched normal expression data?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT COUNT(*) AS n_patients FROM data_availability WHERE has_rna_tumor = 1 AND has_rna_normal = 1;",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2115,
+            "output_tokens": 45,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(*) AS n_patients FROM data_availability WHERE has_rna_tumor = 1 AND has_rna_normal = 1;",
+      "reference_sql": "SELECT COUNT(*) FROM data_availability WHERE has_rna_tumor = 1 AND has_rna_normal = 1",
+      "reference_result": [
+        [
+          112
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          112
+        ]
+      ],
+      "shown_to_user": [
+        [
+          112
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S10",
+      "split": "stress",
+      "kind": "answer",
+      "question": "Which subtype has the highest average ESR1?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT pam50_subtype, AVG(log2_expr) AS avg_esr1 FROM clinical JOIN rna_samples ON clinical.patient_id = rna_samples.patient_id AND rna_samples.sample_type_code = '01' JOIN gene_expression ON rna_samples.sample_id = gene_expression.sample_id WHERE gene_expression.gene_symbol = 'ESR1' GROUP BY pam50_subtype ORDER BY avg_esr1 DESC LIMIT 1;",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2113,
+            "output_tokens": 101,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT pam50_subtype, AVG(log2_expr) AS avg_esr1 FROM clinical JOIN rna_samples ON clinical.patient_id = rna_samples.patient_id AND rna_samples.sample_type_code = '01' JOIN gene_expression ON rna_samples.sample_id = gene_expression.sample_id WHERE gene_expression.gene_symbol = 'ESR1' GROUP BY pam50_subtype ORDER BY avg_esr1 DESC LIMIT 1;",
+      "reference_sql": "SELECT c.pam50_subtype FROM gene_expression g JOIN rna_samples s ON s.sample_id = g.sample_id JOIN clinical c ON c.patient_id = g.patient_id WHERE g.gene_symbol = 'ESR1' AND s.sample_type_code = '01' AND c.pam50_subtype IS NOT NULL GROUP BY c.pam50_subtype ORDER BY AVG(g.log2_expr) DESC LIMIT 1",
+      "reference_result": [
+        [
+          "LumB"
+        ]
+      ],
+      "correct": false,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          "LumB",
+          13.602828125
+        ]
+      ],
+      "shown_to_user": [
+        [
+          "LumB",
+          13.602828125
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S11",
+      "split": "stress",
+      "kind": "refuse",
+      "question": "How many deaths among node-positive patients?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT COUNT(*) AS death_count FROM clinical WHERE os_event = 1 AND ajcc_stage IN ('Stage IIA', 'Stage IIB', 'Stage III', 'Stage IIIA', 'Stage IIIB', 'Stage IIIC', 'Stage IV');",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2112,
+            "output_tokens": 68,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(*) AS death_count FROM clinical WHERE os_event = 1 AND ajcc_stage IN ('Stage IIA', 'Stage IIB', 'Stage III', 'Stage IIIA', 'Stage IIIB', 'Stage IIIC', 'Stage IV');",
+      "reference_sql": null,
+      "correct": false,
+      "blocked_by": null
+    },
+    {
+      "id": "S12",
+      "split": "stress",
+      "kind": "refuse",
+      "question": "How many patients got tamoxifen?",
+      "outcome": "model_refused",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "",
+          "refuse": true,
+          "reason": "Tamoxifen treatment data is not available in the schema.",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2112,
+            "output_tokens": 27,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "",
+      "reference_sql": null,
+      "correct": true,
+      "blocked_by": "model"
+    },
+    {
+      "id": "S13",
+      "split": "stress",
+      "kind": "answer",
+      "question": "What fraction of the cohort is male?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT CAST(SUM(CASE WHEN gender = 'MALE' THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*) AS male_fraction FROM patients;",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2112,
+            "output_tokens": 48,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT CAST(SUM(CASE WHEN gender = 'MALE' THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*) AS male_fraction FROM patients;",
+      "reference_sql": "SELECT 1.0 * SUM(gender = 'MALE') / COUNT(*) FROM patients",
+      "reference_result": [
+        [
+          0.01098901098901099
+        ]
+      ],
+      "alternative_results": [
+        [
+          [
+            1.098901098901099
+          ]
+        ],
+        [
+          [
+            1.1
+          ]
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          0.01098901098901099
+        ]
+      ],
+      "shown_to_user": [
+        [
+          "<11"
+        ]
+      ],
+      "suppressed_cells": 1
+    },
+    {
+      "id": "S14",
+      "split": "stress",
+      "kind": "answer",
+      "question": "How many patients have open-access slides in the GDC?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT COUNT(DISTINCT patient_id) AS n_patients FROM slide_images WHERE gdc_access = 'open';",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2116,
+            "output_tokens": 39,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(DISTINCT patient_id) AS n_patients FROM slide_images WHERE gdc_access = 'open';",
+      "reference_sql": "SELECT COUNT(DISTINCT patient_id) FROM slide_images WHERE gdc_access = 'open'",
+      "reference_result": [
+        [
+          1092
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          1092
+        ]
+      ],
+      "shown_to_user": [
+        [
+          1092
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S15",
+      "split": "stress",
+      "kind": "answer",
+      "question": "Median age at diagnosis?",
+      "outcome": "guard_rejected",
+      "repaired": true,
+      "attempts": [
+        {
+          "sql": "SELECT AVG(age_at_diagnosis) AS median_age FROM (SELECT age_at_diagnosis FROM patients WHERE age_at_diagnosis IS NOT NULL ORDER BY age_at_diagnosis LIMIT 2 - (SELECT COUNT(*) FROM patients WHERE age_at_diagnosis IS NOT NULL) % 2 OFFSET (SELECT (COUNT(*) - 1) / 2 FROM patients WHERE age_at_diagnosis IS NOT NULL));",
+          "refuse": false,
+          "reason": "",
+          "guard_error": "[parse] sqlglot could not parse the SQL: Expecting ). Line 1, Col: 157.",
+          "usage": {
+            "input_tokens": 2109,
+            "output_tokens": 101,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        },
+        {
+          "sql": "SELECT AVG(age_at_diagnosis) AS median_age FROM (SELECT age_at_diagnosis FROM patients WHERE age_at_diagnosis IS NOT NULL ORDER BY age_at_diagnosis LIMIT 2 - (SELECT COUNT(*) FROM patients WHERE age_at_diagnosis IS NOT NULL) % 2 OFFSET (SELECT (COUNT(*) FROM patients WHERE age_at_diagnosis IS NOT NULL - 1) / 2));",
+          "refuse": false,
+          "reason": "",
+          "guard_error": "[parse] sqlglot could not parse the SQL: Expecting ). Line 1, Col: 157.",
+          "usage": {
+            "input_tokens": 2264,
+            "output_tokens": 96,
+            "cached_input_tokens": 2048
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT AVG(age_at_diagnosis) AS median_age FROM (SELECT age_at_diagnosis FROM patients WHERE age_at_diagnosis IS NOT NULL ORDER BY age_at_diagnosis LIMIT 2 - (SELECT COUNT(*) FROM patients WHERE age_at_diagnosis IS NOT NULL) % 2 OFFSET (SELECT (COUNT(*) FROM patients WHERE age_at_diagnosis IS NOT NULL - 1) / 2));",
+      "reference_sql": "SELECT AVG(age_at_diagnosis) FROM (SELECT age_at_diagnosis FROM patients WHERE age_at_diagnosis IS NOT NULL ORDER BY age_at_diagnosis LIMIT (2 - (SELECT COUNT(age_at_diagnosis) FROM patients) % 2) OFFSET (SELECT (COUNT(age_at_diagnosis) - 1) / 2 FROM patients))",
+      "reference_result": [
+        [
+          58.0
+        ]
+      ],
+      "correct": false,
+      "correct_lenient": false
+    },
+    {
+      "id": "S16",
+      "split": "stress",
+      "kind": "answer",
+      "question": "How many stage IV patients are still alive?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT COUNT(*) AS num_alive_stage_iv_patients FROM clinical WHERE stage_group = 'IV' AND vital_status = 'Alive';",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2113,
+            "output_tokens": 42,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(*) AS num_alive_stage_iv_patients FROM clinical WHERE stage_group = 'IV' AND vital_status = 'Alive';",
+      "reference_sql": "SELECT COUNT(*) FROM clinical WHERE stage_group = 'IV' AND vital_status = 'Alive'",
+      "reference_result": [
+        [
+          5
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          5
+        ]
+      ],
+      "shown_to_user": [
+        [
+          "<11"
+        ]
+      ],
+      "suppressed_cells": 1
+    },
+    {
+      "id": "S17",
+      "split": "stress",
+      "kind": "either",
+      "question": "Give me the ER-positive patients diagnosed under 35.",
+      "outcome": "valid",
+      "repaired": true,
+      "attempts": [
+        {
+          "sql": "SELECT patient_id FROM patients JOIN clinical USING (patient_id) WHERE age_at_diagnosis < 35 AND er_status = 'Positive'",
+          "refuse": false,
+          "reason": "",
+          "guard_error": "[aggregate_only] role 'researcher' may only run aggregate queries (GROUP BY or COUNT/AVG/MIN/MAX/SUM in the outermost SELECT); row-level results require role 'approved'",
+          "usage": {
+            "input_tokens": 2115,
+            "output_tokens": 43,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        },
+        {
+          "sql": "SELECT COUNT(DISTINCT patients.patient_id) AS n_er_positive_under_35 FROM patients JOIN clinical ON patients.patient_id = clinical.patient_id WHERE patients.age_at_diagnosis < 35 AND clinical.er_status = 'Positive'",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2228,
+            "output_tokens": 56,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT COUNT(DISTINCT patients.patient_id) AS n_er_positive_under_35 FROM patients JOIN clinical ON patients.patient_id = clinical.patient_id WHERE patients.age_at_diagnosis < 35 AND clinical.er_status = 'Positive'",
+      "reference_sql": "SELECT COUNT(*) FROM patients p JOIN clinical c ON c.patient_id = p.patient_id WHERE c.er_status = 'Positive' AND p.age_at_diagnosis < 35",
+      "reference_result": [
+        [
+          20
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          20
+        ]
+      ],
+      "shown_to_user": [
+        [
+          20
+        ]
+      ],
+      "suppressed_cells": 0
+    },
+    {
+      "id": "S18",
+      "split": "stress",
+      "kind": "answer",
+      "question": "Is the PFI event rate different between triple-negative and other patients?",
+      "outcome": "valid",
+      "repaired": false,
+      "attempts": [
+        {
+          "sql": "SELECT c.triple_negative, AVG(c.pfi_event) AS pfi_event_rate FROM clinical c WHERE c.triple_negative IS NOT NULL AND c.pfi_event IS NOT NULL GROUP BY c.triple_negative;",
+          "refuse": false,
+          "reason": "",
+          "guard_error": null,
+          "usage": {
+            "input_tokens": 2118,
+            "output_tokens": 58,
+            "cached_input_tokens": 1920
+          },
+          "cached": false
+        }
+      ],
+      "final_sql": "SELECT c.triple_negative, AVG(c.pfi_event) AS pfi_event_rate FROM clinical c WHERE c.triple_negative IS NOT NULL AND c.pfi_event IS NOT NULL GROUP BY c.triple_negative;",
+      "reference_sql": "SELECT triple_negative, AVG(pfi_event) FROM clinical WHERE triple_negative IS NOT NULL GROUP BY triple_negative",
+      "reference_result": [
+        [
+          0,
+          0.11703360370799537
+        ],
+        [
+          1,
+          0.17834394904458598
+        ]
+      ],
+      "alternative_results": [
+        [
+          [
+            0,
+            11.703360370799537
+          ],
+          [
+            1,
+            17.8343949044586
+          ]
+        ]
+      ],
+      "correct": true,
+      "correct_lenient": true,
+      "predicted_result": [
+        [
+          0,
+          0.11703360370799537
+        ],
+        [
+          1,
+          0.17834394904458598
+        ]
+      ],
+      "shown_to_user": [
+        [
+          0,
+          0.11703360370799537
+        ],
+        [
+          1,
+          0.17834394904458598
+        ]
+      ],
+      "suppressed_cells": 0
+    }
+  ]
+}

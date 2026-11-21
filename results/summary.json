@@ -250,6 +250,102 @@
           "refuse_n": 6
         }
       }
+    },
+    "openai_v1_dev": {
+      "file": "eval_openai_dev_prompt_v1.json",
+      "backend": "OpenAI API model 'gpt-4.1-2025-04-14' (temperature 0, prompt v1)",
+      "git_commit": "5e50545",
+      "run_at": "2026-11-21T01:09:54.889929+00:00",
+      "llm_calls": 15,
+      "llm_calls_from_cache": 0,
+      "tokens": {
+        "input_tokens": 31781,
+        "output_tokens": 627,
+        "cached_input_tokens": 24960
+      },
+      "outcomes": {
+        "valid": 12,
+        "model_refused": 3
+      },
+      "silent_wrong_answers": [],
+      "first_attempt_guard_errors": {},
+      "shown_vs_scored_mismatches": [],
+      "n_items_shown_and_scored": 12,
+      "by_split": {
+        "dev": {
+          "answer_correct": 12,
+          "answer_n": 12,
+          "answer_correct_lenient": 12,
+          "refuse_correct": 3,
+          "refuse_n": 3
+        }
+      }
+    },
+    "openai_v1_test": {
+      "file": "eval_openai_test_frozen_v1.json",
+      "backend": "OpenAI API model 'gpt-4.1-2025-04-14' (temperature 0, prompt v1)",
+      "git_commit": "5e50545",
+      "run_at": "2026-11-21T01:10:27.375388+00:00",
+      "llm_calls": 34,
+      "llm_calls_from_cache": 0,
+      "tokens": {
+        "input_tokens": 72110,
+        "output_tokens": 1699,
+        "cached_input_tokens": 61440
+      },
+      "outcomes": {
+        "valid": 28,
+        "model_refused": 6
+      },
+      "silent_wrong_answers": [],
+      "first_attempt_guard_errors": {},
+      "shown_vs_scored_mismatches": [],
+      "n_items_shown_and_scored": 28,
+      "by_split": {
+        "test": {
+          "answer_correct": 28,
+          "answer_n": 28,
+          "answer_correct_lenient": 28,
+          "refuse_correct": 6,
+          "refuse_n": 6
+        }
+      }
+    },
+    "openai_v1_stress": {
+      "file": "eval_openai_stress_frozen_v1.json",
+      "backend": "OpenAI API model 'gpt-4.1-2025-04-14' (temperature 0, prompt v1)",
+      "git_commit": "5e50545",
+      "run_at": "2026-11-21T01:10:42.777872+00:00",
+      "llm_calls": 20,
+      "llm_calls_from_cache": 0,
+      "tokens": {
+        "input_tokens": 42544,
+        "output_tokens": 1150,
+        "cached_input_tokens": 38528
+      },
+      "outcomes": {
+        "valid": 16,
+        "model_refused": 1,
+        "guard_rejected": 1
+      },
+      "silent_wrong_answers": [
+        "S10"
+      ],
+      "first_attempt_guard_errors": {
+        "S15": "[parse] sqlglot could not parse the SQL: Expecting ). Line 1, Col: 157.",
+        "S17": "[aggregate_only] role 'researcher' may only run aggregate queries (GROUP BY or COUNT/AVG/MIN/MAX/SUM in the outermost SELECT); row-level results require role 'approved'"
+      },
+      "shown_vs_scored_mismatches": [],
+      "n_items_shown_and_scored": 15,
+      "by_split": {
+        "stress": {
+          "answer_correct": 14,
+          "answer_n": 16,
+          "answer_correct_lenient": 15,
+          "refuse_correct": 1,
+          "refuse_n": 2
+        }
+      }
     }
   },
   "guard_ablation": {
@@ -302,5 +398,5 @@
       "data_availability": 1092
     }
   },
-  "llm_calls_in_saved_runs_not_from_cache": 0
+  "llm_calls_in_saved_runs_not_from_cache": 69
 }
